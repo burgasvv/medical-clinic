@@ -1,5 +1,6 @@
 package org.burgas.dto
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import org.burgas.database.Authority
 import org.burgas.serialization.UUIDSerializer
@@ -186,7 +187,8 @@ data class DoctorResponse(
     val about: String? = null,
     val image: ImageResponse? = null,
     val createdAt: String? = null,
-    val services: List<ServiceDependency>? = null
+    val services: List<ServiceDependency>? = null,
+    val schedules: List<ScheduleDependency>? = null
 ) : Response
 
 @Serializable
@@ -215,4 +217,81 @@ data class ServiceResponse(
     val description: String? = null,
     val price: Double? = null,
     val doctors: List<DoctorDependency>? = null
+) : Response
+
+@Serializable
+data class ScheduleRequest(
+    val datetime: LocalDateTime? = null
+) : Request
+
+@Serializable
+data class ScheduleDependency(
+    val datetime: String? = null,
+    val busy: Boolean? = null,
+    val appointment: AppointmentDependency? = null
+) : Dependency
+
+@Serializable
+data class ScheduleResponse(
+    val datetime: String? = null,
+    val doctorDependency: DoctorDependency? = null,
+    val busy: Boolean? = null,
+    val appointment: AppointmentDependency? = null
+) : Response
+
+@Serializable
+data class AppointmentRequest(
+    @Serializable(with = UUIDSerializer::class)
+    val doctorId: UUID? = null,
+    val datetime: LocalDateTime? = null,
+    @Serializable(with = UUIDSerializer::class)
+    val patientId: UUID? = null,
+    @Serializable(with = UUIDSerializer::class)
+    val serviceId: UUID? = null,
+    val concluded: Boolean? = null,
+    val paid: Boolean? = null
+) : Request
+
+@Serializable
+data class AppointmentDependency(
+    val patient: PatientResponse? = null,
+    val service: ServiceDependency? = null,
+    val document: DocumentResponse? = null,
+    val concluded: Boolean? = null,
+    val paid: Boolean? = null
+) : Dependency
+
+@Serializable
+data class AppointmentResponse(
+    val datetime: String? = null,
+    val doctor: DoctorDependency? = null,
+    val patient: PatientResponse? = null,
+    val service: ServiceDependency? = null,
+    val document: DocumentResponse? = null,
+    val concluded: Boolean? = null,
+    val paid: Boolean? = null,
+    val payment: PaymentDependency? = null
+) : Response
+
+@Serializable
+data class PaymentRequest(
+    @Serializable(with = UUIDSerializer::class)
+    val doctorId: UUID? = null,
+    val datetime: LocalDateTime? = null,
+    val price: Double? = null
+) : Request
+
+@Serializable
+data class PaymentDependency(
+    val datetime: String? = null,
+    val doctor: DoctorDependency? = null,
+    val price: Double? = null
+) : Dependency
+
+@Serializable
+data class PaymentResponse(
+    val datetime: String? = null,
+    val doctor: DoctorDependency? = null,
+    val price: Double? = null,
+    val appointment: AppointmentDependency? = null
 ) : Response

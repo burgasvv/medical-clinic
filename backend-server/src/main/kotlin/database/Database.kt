@@ -2,24 +2,20 @@ package org.burgas.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.server.config.ApplicationConfig
-import org.jetbrains.exposed.v1.core.DatabaseConfig
-import org.jetbrains.exposed.v1.core.ReferenceOption
-import org.jetbrains.exposed.v1.core.Table
+import io.ktor.server.config.*
+import kotlinx.datetime.LocalDateTime
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.core.dao.id.CompositeIdTable
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.core.dao.id.java.UUIDTable
-import org.jetbrains.exposed.v1.core.greaterEq
-import org.jetbrains.exposed.v1.core.java.javaUUID
-import org.jetbrains.exposed.v1.core.like
-import org.jetbrains.exposed.v1.core.regexp
 import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
 import org.jetbrains.exposed.v1.datetime.CurrentDateTime
-import org.jetbrains.exposed.v1.datetime.date
 import org.jetbrains.exposed.v1.datetime.datetime
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import java.sql.Connection
-import java.util.UUID
 
 object DatabaseConnection {
 
@@ -71,6 +67,7 @@ object IdentityTable : UUIDTable("identity") {
     val firstname = varchar("firstname", 250)
     val lastname = varchar("lastname", 250)
     val patronymic = varchar("patronymic", 250)
+
     init {
         uniqueIndex("idx_id_authority", id, authority)
     }
@@ -130,7 +127,7 @@ object ServiceTable : UUIDTable("service") {
     val price = double("price").default(0.0).check { it greaterEq 0.0 }
 }
 
-object DoctorServiceTable : Table("doctor_service") {
+object DoctorServiceTable : CompositeIdTable("doctor_service") {
     val doctorId = reference(
         name = "doctor_id", refColumn = DoctorTable.id,
         onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
@@ -141,31 +138,46 @@ object DoctorServiceTable : Table("doctor_service") {
     )
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(arrayOf(doctorId, serviceId))
+    init {
+        addIdColumn(doctorId)
+        addIdColumn(serviceId)
+    }
 }
 
-object ScheduleTable : Table("schedule") {
-    val dateTime = datetime("datetime").uniqueIndex()
+object ScheduleTable : IdTable<LocalDateTime>("schedule") {
+    override val id: Column<EntityID<LocalDateTime>>
+        get() = datetime("datetime").defaultExpression(CurrentDateTime).entityId()
     override val primaryKey: PrimaryKey
-        get() = PrimaryKey(dateTime)
+        get() = PrimaryKey(id)
 }
 
-object DoctorScheduleTable : Table("doctor_schedule") {
+object DoctorScheduleTable : CompositeIdTable("doctor_schedule") {
     val doctorId = reference(
         name = "doctor_id", refColumn = DoctorTable.id,
         onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
     )
     val dateTime = reference(
-        name = "datetime", refColumn = ScheduleTable.dateTime,
+        name = "datetime", refColumn = ScheduleTable.id,
         onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
     )
     val busy = bool("busy").default(false)
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(arrayOf(doctorId, dateTime))
+    init {
+        addIdColumn(doctorId)
+        addIdColumn(dateTime)
+    }
 }
 
-object AppointmentTable : Table("appointment") {
-    val doctorId = javaUUID("doctor_id")
-    val dateTime = datetime("datetime")
+object AppointmentTable : CompositeIdTable("appointment") {
+    val doctorId = reference(
+        name = "doctor_id", refColumn = DoctorScheduleTable.doctorId,
+        onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
+    )
+    val dateTime = reference(
+        name = "datetime", refColumn = DoctorScheduleTable.dateTime,
+        onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
+    )
     val patientId = reference(
         name = "patient_id", refColumn = PatientTable.id,
         onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
@@ -180,19 +192,31 @@ object AppointmentTable : Table("appointment") {
     ).uniqueIndex()
     val concluded = bool("concluded").default(false)
     val paid = bool("paid").default(false)
+
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(arrayOf(doctorId, dateTime))
+
     init {
-        foreignKey(doctorId, dateTime, target = DoctorScheduleTable.primaryKey)
+        addIdColumn(doctorId)
+        addIdColumn(dateTime)
     }
 }
 
-object PaymentTable : UUIDTable("payment") {
-    val doctorId = javaUUID("doctor_id")
-    val dateTime = datetime("datetime")
+object PaymentTable : CompositeIdTable("payment") {
+    val doctorId = reference(
+        name = "doctor_id", refColumn = AppointmentTable.doctorId,
+        onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
+    )
+    val dateTime = reference(
+        name = "datetime", refColumn = AppointmentTable.dateTime,
+        onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
+    )
     val price = double("price").default(0.0).check { it greaterEq 0.0 }
+    override val primaryKey: PrimaryKey
+        get() = PrimaryKey(arrayOf(doctorId, dateTime))
     init {
-        foreignKey(doctorId, dateTime, target = AppointmentTable.primaryKey)
+        addIdColumn(doctorId)
+        addIdColumn(dateTime)
     }
 }
 

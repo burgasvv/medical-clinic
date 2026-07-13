@@ -1,35 +1,19 @@
 package org.burgas.dao
 
-import io.ktor.http.content.PartData
-import io.ktor.utils.io.InternalAPI
+import io.ktor.http.content.*
+import io.ktor.utils.io.*
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.io.readByteArray
 import org.burgas.database.*
-import org.burgas.dto.AdminRequest
-import org.burgas.dto.AdminResponse
-import org.burgas.dto.CategoryDependency
-import org.burgas.dto.CategoryRequest
-import org.burgas.dto.CategoryResponse
-import org.burgas.dto.DepartmentDependency
-import org.burgas.dto.DepartmentRequest
-import org.burgas.dto.DepartmentResponse
-import org.burgas.dto.Dependency
-import org.burgas.dto.DoctorDependency
-import org.burgas.dto.DoctorRequest
-import org.burgas.dto.DoctorResponse
-import org.burgas.dto.DocumentResponse
-import org.burgas.dto.IdentityRequest
-import org.burgas.dto.IdentityResponse
-import org.burgas.dto.ImageResponse
-import org.burgas.dto.PatientRequest
-import org.burgas.dto.PatientResponse
-import org.burgas.dto.Request
-import org.burgas.dto.Response
-import org.burgas.dto.ServiceDependency
-import org.burgas.dto.ServiceRequest
-import org.burgas.dto.ServiceResponse
+import org.burgas.dto.*
+import org.jetbrains.exposed.v1.core.dao.id.CompositeID
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.statements.api.ExposedBlob
+import org.jetbrains.exposed.v1.dao.CompositeEntity
+import org.jetbrains.exposed.v1.dao.CompositeEntityClass
+import org.jetbrains.exposed.v1.dao.Entity
+import org.jetbrains.exposed.v1.dao.EntityClass
 import org.jetbrains.exposed.v1.dao.java.UUIDEntity
 import org.jetbrains.exposed.v1.dao.java.UUIDEntityClass
 import org.mindrot.jbcrypt.BCrypt
@@ -305,6 +289,7 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DoctorRequest>,
     var image by ImageEntity.optionalReferencedOn(DoctorTable.imageId)
     var createdAt by DoctorTable.createdAt
     var services by ServiceEntity.via(DoctorServiceTable.doctorId, DoctorServiceTable.serviceId)
+    var schedules by ScheduleEntity.via(DoctorScheduleTable.doctorId, DoctorScheduleTable.dateTime)
 
     override fun create(request: DoctorRequest) {
         request.identityRequest!!.let {
@@ -387,4 +372,45 @@ class ServiceEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ServiceRequest
             doctors = this.doctors.map { it.toDependency() }
         )
     }
+}
+
+class DoctorServiceEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
+    companion object : CompositeEntityClass<DoctorServiceEntity>(DoctorServiceTable)
+
+    var doctor by DoctorEntity.referencedOn(DoctorServiceTable.doctorId)
+    var service by ServiceEntity.referencedOn(DoctorServiceTable.serviceId)
+}
+
+class ScheduleEntity(id: EntityID<LocalDateTime>) : Entity<LocalDateTime>(id) {
+    companion object : EntityClass<LocalDateTime, ScheduleEntity>(ScheduleTable)
+
+    var doctors by DoctorEntity.via(DoctorScheduleTable.dateTime, DoctorServiceTable.doctorId)
+}
+
+class DoctorScheduleEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
+    companion object : CompositeEntityClass<DoctorScheduleEntity>(DoctorScheduleTable)
+
+    var doctor by DoctorEntity.referencedOn(DoctorScheduleTable.doctorId)
+    var schedule by ScheduleEntity.referencedOn(DoctorScheduleTable.dateTime)
+    var busy by DoctorScheduleTable.busy
+}
+
+class AppointmentEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
+    companion object : CompositeEntityClass<AppointmentEntity>(AppointmentTable)
+
+    var doctor by DoctorEntity.referencedOn(AppointmentTable.doctorId)
+    var schedule by ScheduleEntity.referencedOn(AppointmentTable.dateTime)
+    var patient by PatientEntity.referencedOn(AppointmentTable.patientId)
+    var service by ServiceEntity.referencedOn(AppointmentTable.serviceId)
+    var document by DocumentEntity.optionalReferencedOn(AppointmentTable.documentId)
+    var concluded by AppointmentTable.concluded
+    var paid by AppointmentTable.paid
+}
+
+class PaymentEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
+    companion object : CompositeEntityClass<PaymentEntity>(PaymentTable)
+
+    var doctor by DoctorEntity.referencedOn(PaymentTable.doctorId)
+    var schedule by ScheduleEntity.referencedOn(PaymentTable.dateTime)
+    var price by PaymentTable.price
 }
