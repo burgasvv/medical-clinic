@@ -16,12 +16,16 @@ kotlin {
     jvmToolchain(25)
 }
 dependencies {
-    implementation(ktorLibs.serialization.kotlinx.json)
-    implementation(ktorLibs.server.config.yaml)
-    implementation(ktorLibs.server.contentNegotiation)
-    implementation(ktorLibs.client.contentNegotiation)
     implementation(ktorLibs.server.core)
     implementation(ktorLibs.server.netty)
+    implementation(ktorLibs.server.config.yaml)
+    implementation(ktorLibs.serialization.kotlinx.json)
+    implementation(ktorLibs.server.contentNegotiation)
+    implementation(ktorLibs.client.contentNegotiation)
+    implementation(ktorLibs.server.statusPages)
+    implementation(ktorLibs.server.sessions)
+    implementation(ktorLibs.server.cors)
+    implementation(ktorLibs.server.csrf)
     implementation(libs.logback.classic)
 
     testImplementation(kotlin("test"))
