@@ -1,0 +1,25 @@
+
+services:
+
+  postgres:
+    container_name: medical-clinic-postgres
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5000:5432"
+    networks:
+      - my-network
+    environment:
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: medical-clinic-db
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+volumes:
+  postgres-data:
+
+networks:
+  my-network:
+    name: my-network
+    external: true

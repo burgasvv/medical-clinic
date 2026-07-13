@@ -1,0 +1,5 @@
+
+name: medical-clinic
+
+include:
+  - ./backend-server/docker-compose.yaml

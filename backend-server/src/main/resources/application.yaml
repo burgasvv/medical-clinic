@@ -5,3 +5,8 @@ ktor:
   application:
     modules:
       - org.burgas.MainKt.modules
+
+postgres:
+  url: '$POSTGRES_URL:jdbc:postgresql://localhost:5000/medical-clinic-db'
+  user: '$POSTGRES_USER:postgres'
+  password: '$POSTGRES_PASSWORD:postgres'

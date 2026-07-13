@@ -1,8 +1,9 @@
 package org.burgas.dto
 
 import kotlinx.serialization.Serializable
+import org.burgas.database.Authority
 import org.burgas.serialization.UUIDSerializer
-import java.util.UUID
+import java.util.*
 
 @Serializable
 data class ExceptionResponse(
@@ -13,3 +14,9 @@ data class ExceptionResponse(
 
 @Serializable
 data class CsrfToken(@Serializable(with = UUIDSerializer::class) val token: UUID)
+
+@Serializable
+data class AuthToken(
+    val email: String,
+    val authority: Authority
+)

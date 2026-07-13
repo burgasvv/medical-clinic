@@ -27,6 +27,12 @@ dependencies {
     implementation(ktorLibs.server.cors)
     implementation(ktorLibs.server.csrf)
     implementation(libs.logback.classic)
+    implementation("org.jetbrains.exposed:exposed-core:1.3.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:1.3.0")
+    implementation("org.jetbrains.exposed:exposed-dao:1.3.0")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:1.3.0")
+    implementation("org.postgresql:postgresql:42.7.11")
+    implementation("com.zaxxer:HikariCP:7.1.0")
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
