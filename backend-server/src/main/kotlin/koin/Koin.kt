@@ -2,6 +2,7 @@ package org.burgas.koin
 
 import io.ktor.server.application.*
 import org.burgas.service.DocumentService
+import org.burgas.service.IdentityService
 import org.burgas.service.ImageService
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -13,6 +14,7 @@ fun Application.configureKoin() {
     val modules = module {
         singleOf(::ImageService)
         singleOf(::DocumentService)
+        singleOf(::IdentityService)
     }
 
     install(Koin) {

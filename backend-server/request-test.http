@@ -13,3 +13,19 @@ Authorization: Basic burgasvv@gmail.com burgasvv
 ###
 POST /api/v1/security/logout
 Host: localhost:9000
+
+
+
+### Identity Requests
+
+
+
+###
+PUT /api/v1/identities/change-password
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "id": "6d8c7d99-0a45-454d-9bf2-cc0c8d2bd079",
+    "password": "burgasvv"
+}

@@ -1,0 +1,86 @@
+ package org.burgas.router
+
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.authenticate
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.sessions.get
+import io.ktor.server.sessions.sessions
+import io.ktor.util.AttributeKey
+import org.burgas.dao.IdentityEntity
+import org.burgas.database.DatabaseConnection
+import org.burgas.dto.AuthToken
+import org.burgas.dto.IdentityRequest
+import org.burgas.service.IdentityService
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.koin.ktor.ext.inject
+
+fun Application.configureIdentityRouter() {
+
+    val identityService by inject<IdentityService>()
+
+    intercept(ApplicationCallPipeline.Plugins) {
+
+        if (call.request.path().equals("/api/v1/identities/change-password", false)) {
+            val authToken = call.sessions.get(AuthToken::class)
+                ?: throw IllegalArgumentException("Not authenticated intercept for changing password")
+            val identityRequest = call.receive(IdentityRequest::class)
+
+            val identityEntity = suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
+                IdentityEntity.findById(identityRequest.id!!)
+                    ?: throw IllegalArgumentException("Not found identity intercept for changing password")
+            }
+            if (identityEntity.email == authToken.email) {
+                call.attributes[AttributeKey<IdentityRequest>("identityRequest")] = identityRequest
+                proceed()
+            } else {
+                throw IllegalArgumentException("Not authorized intercept for changing password")
+            }
+
+        } else if(call.request.path().equals("/api/v1/identities/change-status", false)) {
+            val authToken = call.sessions.get(AuthToken::class)
+                ?: throw IllegalArgumentException("Not authenticated intercept for changing status")
+            val identityRequest = call.receive(IdentityRequest::class)
+
+            val identityEntity = suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
+                IdentityEntity.findById(identityRequest.id!!)
+                    ?: throw IllegalArgumentException("Not found identity intercept for status")
+            }
+            if (identityEntity.email != authToken.email) {
+                call.attributes[AttributeKey<IdentityRequest>("identityRequest")] = identityRequest
+                proceed()
+            } else {
+                throw IllegalArgumentException("Not authorized intercept for changing status")
+            }
+
+        } else {
+            proceed()
+        }
+    }
+
+    routing {
+
+        route("/api/v1/identities") {
+
+            authenticate("session-auth") {
+
+                put("/change-password") {
+                    val identityRequest = call.attributes[AttributeKey<IdentityRequest>("identityRequest")]
+                    identityService.changePassword(identityRequest)
+                    call.respond(HttpStatusCode.OK)
+                }
+            }
+
+            authenticate("session-auth-admin") {
+
+                put("/change-status") {
+                    val identityRequest = call.attributes[AttributeKey<IdentityRequest>("identityRequest")]
+                    identityService.changeStatus(identityRequest)
+                    call.respond(HttpStatusCode.OK)
+                }
+            }
+        }
+    }
+}
