@@ -2,18 +2,12 @@ package org.burgas.dao
 
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.io.readByteArray
 import org.burgas.database.*
 import org.burgas.dto.*
-import org.jetbrains.exposed.v1.core.dao.id.CompositeID
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.statements.api.ExposedBlob
-import org.jetbrains.exposed.v1.dao.CompositeEntity
-import org.jetbrains.exposed.v1.dao.CompositeEntityClass
-import org.jetbrains.exposed.v1.dao.Entity
-import org.jetbrains.exposed.v1.dao.EntityClass
 import org.jetbrains.exposed.v1.dao.java.UUIDEntity
 import org.jetbrains.exposed.v1.dao.java.UUIDEntityClass
 import org.mindrot.jbcrypt.BCrypt
@@ -177,6 +171,7 @@ class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PatientRequest
     var identity by IdentityEntity.referencedOn(PatientTable.identityId)
     var passport by PatientTable.passport
     var createdAt by PatientTable.createdAt
+    val appointments by AppointmentEntity.referrersOn(AppointmentTable.patientId)
 
     override fun create(request: PatientRequest) {
         request.identityRequest!!.let {
@@ -198,7 +193,8 @@ class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PatientRequest
             identity = this.identity.toResponse(),
             passport = this.passport,
             createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm"))
+                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
+            appointments = this.appointments.map { it.toDependencyInPatient() }
         )
     }
 }
@@ -289,7 +285,7 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DoctorRequest>,
     var image by ImageEntity.optionalReferencedOn(DoctorTable.imageId)
     var createdAt by DoctorTable.createdAt
     var services by ServiceEntity.via(DoctorServiceTable.doctorId, DoctorServiceTable.serviceId)
-    var schedules by ScheduleEntity.via(DoctorScheduleTable.doctorId, DoctorScheduleTable.dateTime)
+    val schedules by ScheduleEntity.referrersOn(ScheduleTable.doctorId)
 
     override fun create(request: DoctorRequest) {
         request.identityRequest!!.let {
@@ -328,7 +324,8 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DoctorRequest>,
             image = this.image?.toResponse(),
             createdAt = this.createdAt.toJavaLocalDateTime()
                 .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
-            services = this.services.map { it.toDependency() }
+            services = this.services.map { it.toDependency() },
+            schedules = this.schedules.map { it.toDependencyInDoctor() }
         )
     }
 }
@@ -374,43 +371,170 @@ class ServiceEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ServiceRequest
     }
 }
 
-class DoctorServiceEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
-    companion object : CompositeEntityClass<DoctorServiceEntity>(DoctorServiceTable)
+class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleRequest>,
+    Modifier<ScheduleRequest>, ResponseMapper<ScheduleResponse> {
+    companion object : UUIDEntityClass<ScheduleEntity>(ScheduleTable)
 
-    var doctor by DoctorEntity.referencedOn(DoctorServiceTable.doctorId)
-    var service by ServiceEntity.referencedOn(DoctorServiceTable.serviceId)
+    var dateTime by ScheduleTable.dateTime
+    var doctor by DoctorEntity.referencedOn(ScheduleTable.doctorId)
+    var busy by ScheduleTable.busy
+    val appointment by AppointmentEntity.optionalBackReferencedOn(AppointmentTable.scheduleId)
+
+    override fun create(request: ScheduleRequest) {
+        request.datetime!!.let { this.dateTime = it }
+        request.doctorId!!.let { this.doctor = DoctorEntity.findById(it)!! }
+        request.busy?.let { this.busy = it }
+    }
+
+    override fun update(request: ScheduleRequest) {
+        request.datetime?.let { this.dateTime = it }
+        request.doctorId?.let { this.doctor = DoctorEntity.findById(it)!! }
+        request.busy?.let { this.busy = it }
+    }
+
+    suspend fun toDependencyInDoctor(): ScheduleDependencyInDoctor {
+        return ScheduleDependencyInDoctor(
+            id = this.id.value,
+            datetime = this.dateTime.toJavaLocalDateTime()
+                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
+            busy = this.busy,
+            appointment = this.appointment?.toDependencyInSchedule()
+        )
+    }
+
+    suspend fun toDependencyInAppointment(): ScheduleDependencyInAppointment {
+        return ScheduleDependencyInAppointment(
+            id = this.id.value,
+            datetime = this.dateTime.toJavaLocalDateTime()
+                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
+            busy = this.busy,
+            doctor = this.doctor.toDependency()
+        )
+    }
+
+    override suspend fun toResponse(): ScheduleResponse {
+        return ScheduleResponse(
+            id = this.id.value,
+            datetime = this.dateTime.toJavaLocalDateTime()
+                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
+            busy = this.busy,
+            doctor = this.doctor.toDependency(),
+            appointment = this.appointment?.toDependencyInSchedule()
+        )
+    }
 }
 
-class ScheduleEntity(id: EntityID<LocalDateTime>) : Entity<LocalDateTime>(id) {
-    companion object : EntityClass<LocalDateTime, ScheduleEntity>(ScheduleTable)
+class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<AppointmentRequest>,
+    Modifier<AppointmentRequest>, ResponseMapper<AppointmentResponse> {
+    companion object : UUIDEntityClass<AppointmentEntity>(AppointmentTable)
 
-    var doctors by DoctorEntity.via(DoctorScheduleTable.dateTime, DoctorServiceTable.doctorId)
-}
-
-class DoctorScheduleEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
-    companion object : CompositeEntityClass<DoctorScheduleEntity>(DoctorScheduleTable)
-
-    var doctor by DoctorEntity.referencedOn(DoctorScheduleTable.doctorId)
-    var schedule by ScheduleEntity.referencedOn(DoctorScheduleTable.dateTime)
-    var busy by DoctorScheduleTable.busy
-}
-
-class AppointmentEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
-    companion object : CompositeEntityClass<AppointmentEntity>(AppointmentTable)
-
-    var doctor by DoctorEntity.referencedOn(AppointmentTable.doctorId)
-    var schedule by ScheduleEntity.referencedOn(AppointmentTable.dateTime)
+    var schedule by ScheduleEntity.referencedOn(AppointmentTable.scheduleId)
     var patient by PatientEntity.referencedOn(AppointmentTable.patientId)
     var service by ServiceEntity.referencedOn(AppointmentTable.serviceId)
     var document by DocumentEntity.optionalReferencedOn(AppointmentTable.documentId)
     var concluded by AppointmentTable.concluded
     var paid by AppointmentTable.paid
+    val payment by PaymentEntity.optionalBackReferencedOn(PaymentTable.appointmentId)
+
+    override fun create(request: AppointmentRequest) {
+        request.scheduleId!!.let { this.schedule = ScheduleEntity.findById(it)!! }
+        request.patientId!!.let { this.patient = PatientEntity.findById(it)!! }
+        request.serviceId!!.let { this.service = ServiceEntity.findById(it)!! }
+        request.concluded?.let { this.concluded = it }
+        request.paid?.let { this.paid = it }
+    }
+
+    override fun update(request: AppointmentRequest) {
+        request.scheduleId?.let { this.schedule = ScheduleEntity.findById(it)!! }
+        request.patientId?.let { this.patient = PatientEntity.findById(it)!! }
+        request.serviceId?.let { this.service = ServiceEntity.findById(it)!! }
+        request.concluded?.let { this.concluded = it }
+        request.paid?.let { this.paid = it }
+    }
+
+    suspend fun toDependencyInSchedule(): AppointmentDependencyInSchedule {
+        return AppointmentDependencyInSchedule(
+            id = this.id.value,
+            patient = this.patient.toResponse(),
+            service = this.service.toDependency(),
+            document = this.document?.toResponse(),
+            concluded = this.concluded,
+            paid = this.paid
+        )
+    }
+
+    suspend fun toDependencyInPatient(): AppointmentDependencyInPatient {
+        return AppointmentDependencyInPatient(
+            id = this.id.value,
+            schedule = this.schedule.toDependencyInAppointment(),
+            service = this.service.toDependency(),
+            document = this.document?.toResponse(),
+            concluded = this.concluded,
+            paid = this.paid,
+            payment = this.payment?.toDependency()
+        )
+    }
+
+    suspend fun toDependencyInPayment(): AppointmentDependencyInPayment {
+        return AppointmentDependencyInPayment(
+            id = this.id.value,
+            schedule = this.schedule.toDependencyInAppointment(),
+            service = this.service.toDependency(),
+            document = this.document?.toResponse(),
+            concluded = this.concluded,
+            paid = this.paid,
+            patient = this.patient.toResponse()
+        )
+    }
+
+    override suspend fun toResponse(): AppointmentResponse {
+        return AppointmentResponse(
+            id = this.id.value,
+            schedule = this.schedule.toDependencyInAppointment(),
+            patient = this.patient.toResponse(),
+            service = this.service.toDependency(),
+            document = this.document?.toResponse(),
+            concluded = this.concluded,
+            paid = this.paid,
+            payment = this.payment?.toDependency()
+        )
+    }
 }
 
-class PaymentEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
-    companion object : CompositeEntityClass<PaymentEntity>(PaymentTable)
+class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PaymentRequest>,
+    Modifier<PaymentRequest>, DependencyMapper<PaymentDependency>, ResponseMapper<PaymentResponse> {
+    companion object : UUIDEntityClass<PaymentEntity>(PaymentTable)
 
-    var doctor by DoctorEntity.referencedOn(PaymentTable.doctorId)
-    var schedule by ScheduleEntity.referencedOn(PaymentTable.dateTime)
+    var appointment by AppointmentEntity.referencedOn(PaymentTable.appointmentId)
     var price by PaymentTable.price
+    var createdAt by PaymentTable.createdAt
+
+    override fun create(request: PaymentRequest) {
+        request.appointmentId!!.let { this.appointment = AppointmentEntity.findById(it)!! }
+        request.price!!.let { this.price = it }
+    }
+
+    override fun update(request: PaymentRequest) {
+        request.appointmentId?.let { this.appointment = AppointmentEntity.findById(it)!! }
+        request.price?.let { this.price = it }
+    }
+
+    override suspend fun toDependency(): PaymentDependency {
+        return PaymentDependency(
+            id = this.id.value,
+            price = this.price,
+            createdAt = this.createdAt.toJavaLocalDateTime()
+                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm"))
+        )
+    }
+
+    override suspend fun toResponse(): PaymentResponse {
+        return PaymentResponse(
+            id = this.id.value,
+            appointment = this.appointment.toDependencyInPayment(),
+            price = this.price,
+            createdAt = this.createdAt.toJavaLocalDateTime()
+                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm"))
+        )
+    }
 }

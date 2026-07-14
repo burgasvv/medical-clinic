@@ -101,7 +101,8 @@ data class PatientResponse(
     val id: UUID? = null,
     val identity: IdentityResponse? = null,
     val passport: String? = null,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    val appointments: List<AppointmentDependencyInPatient>? = null
 ) : Response
 
 @Serializable
@@ -188,7 +189,7 @@ data class DoctorResponse(
     val image: ImageResponse? = null,
     val createdAt: String? = null,
     val services: List<ServiceDependency>? = null,
-    val schedules: List<ScheduleDependency>? = null
+    val schedules: List<ScheduleDependencyInDoctor>? = null
 ) : Response
 
 @Serializable
@@ -221,29 +222,48 @@ data class ServiceResponse(
 
 @Serializable
 data class ScheduleRequest(
-    val datetime: LocalDateTime? = null
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val datetime: LocalDateTime? = null,
+    @Serializable(with = UUIDSerializer::class)
+    val doctorId: UUID? = null,
+    val busy: Boolean? = null
 ) : Request
 
 @Serializable
-data class ScheduleDependency(
+data class ScheduleDependencyInDoctor(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
     val datetime: String? = null,
     val busy: Boolean? = null,
-    val appointment: AppointmentDependency? = null
-) : Dependency
+    val appointment: AppointmentDependencyInSchedule? = null
+)
+
+@Serializable
+data class ScheduleDependencyInAppointment(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val datetime: String? = null,
+    val busy: Boolean? = null,
+    val doctor: DoctorDependency? = null
+)
 
 @Serializable
 data class ScheduleResponse(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
     val datetime: String? = null,
-    val doctorDependency: DoctorDependency? = null,
     val busy: Boolean? = null,
-    val appointment: AppointmentDependency? = null
+    val doctor: DoctorDependency? = null,
+    val appointment: AppointmentDependencyInSchedule? = null
 ) : Response
 
 @Serializable
 data class AppointmentRequest(
     @Serializable(with = UUIDSerializer::class)
-    val doctorId: UUID? = null,
-    val datetime: LocalDateTime? = null,
+    val id: UUID? = null,
+    @Serializable(with = UUIDSerializer::class)
+    val scheduleId: UUID? = null,
     @Serializable(with = UUIDSerializer::class)
     val patientId: UUID? = null,
     @Serializable(with = UUIDSerializer::class)
@@ -253,18 +273,45 @@ data class AppointmentRequest(
 ) : Request
 
 @Serializable
-data class AppointmentDependency(
+data class AppointmentDependencyInSchedule(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
     val patient: PatientResponse? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
     val concluded: Boolean? = null,
     val paid: Boolean? = null
-) : Dependency
+)
+
+@Serializable
+data class AppointmentDependencyInPayment(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val schedule: ScheduleDependencyInAppointment? = null,
+    val patient: PatientResponse? = null,
+    val service: ServiceDependency? = null,
+    val document: DocumentResponse? = null,
+    val concluded: Boolean? = null,
+    val paid: Boolean? = null
+)
+
+@Serializable
+data class AppointmentDependencyInPatient(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val schedule: ScheduleDependencyInAppointment? = null,
+    val service: ServiceDependency? = null,
+    val document: DocumentResponse? = null,
+    val concluded: Boolean? = null,
+    val paid: Boolean? = null,
+    val payment: PaymentDependency? = null
+)
 
 @Serializable
 data class AppointmentResponse(
-    val datetime: String? = null,
-    val doctor: DoctorDependency? = null,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val schedule: ScheduleDependencyInAppointment? = null,
     val patient: PatientResponse? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
@@ -276,22 +323,25 @@ data class AppointmentResponse(
 @Serializable
 data class PaymentRequest(
     @Serializable(with = UUIDSerializer::class)
-    val doctorId: UUID? = null,
-    val datetime: LocalDateTime? = null,
+    val id: UUID? = null,
+    @Serializable(with = UUIDSerializer::class)
+    val appointmentId: UUID? = null,
     val price: Double? = null
 ) : Request
 
 @Serializable
 data class PaymentDependency(
-    val datetime: String? = null,
-    val doctor: DoctorDependency? = null,
-    val price: Double? = null
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val price: Double? = null,
+    val createdAt: String? = null
 ) : Dependency
 
 @Serializable
 data class PaymentResponse(
-    val datetime: String? = null,
-    val doctor: DoctorDependency? = null,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val appointment: AppointmentDependencyInPayment? = null,
     val price: Double? = null,
-    val appointment: AppointmentDependency? = null
+    val createdAt: String? = null
 ) : Response
