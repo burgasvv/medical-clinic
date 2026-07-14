@@ -1,0 +1,15 @@
+
+
+
+### Security Requests
+
+
+
+###
+POST /api/v1/security/login
+Host: localhost:9000
+Authorization: Basic burgasvv@gmail.com burgasvv
+
+###
+POST /api/v1/security/logout
+Host: localhost:9000

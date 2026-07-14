@@ -10,3 +10,7 @@ postgres:
   url: '$POSTGRES_URL:jdbc:postgresql://localhost:5000/medical-clinic-db'
   user: '$POSTGRES_USER:postgres'
   password: '$POSTGRES_PASSWORD:postgres'
+
+api:
+  backend-server:
+    url: '$BACKEND_SERVER_URL:http://localhost:9000'

@@ -3,20 +3,19 @@ package org.burgas.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.config.*
-import kotlinx.datetime.LocalDateTime
+import org.burgas.dao.AdminEntity
+import org.burgas.dao.IdentityEntity
 import org.jetbrains.exposed.v1.core.*
-import org.jetbrains.exposed.v1.core.dao.id.CompositeIdTable
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.core.dao.id.java.UUIDTable
-import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
 import org.jetbrains.exposed.v1.datetime.CurrentDateTime
 import org.jetbrains.exposed.v1.datetime.datetime
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.mindrot.jbcrypt.BCrypt
 import java.sql.Connection
+import java.util.*
 
 object DatabaseConnection {
 
@@ -191,4 +190,20 @@ suspend fun configureDatabase() = suspendTransaction(
         DepartmentTable, CategoryTable, DoctorTable, ServiceTable, DoctorServiceTable,
         ScheduleTable, AppointmentTable, PaymentTable
     )
+    val burgasIdentityId = UUID.fromString("6d8c7d99-0a45-454d-9bf2-cc0c8d2bd079")
+    val burgasIdentity = IdentityEntity.findById(burgasIdentityId) ?: IdentityEntity.new(burgasIdentityId) {
+        authority = Authority.ADMIN
+        email = "burgasvv@gmail.com"
+        password = BCrypt.hashpw("burgasvv", BCrypt.gensalt())
+        phone = "+79123456798"
+        status = true
+        firstname = "Бургас"
+        lastname = "Вячеслав"
+        patronymic = "Васильевич"
+    }
+    val burgasAdminId = UUID.fromString("a091ed91-7446-4009-a160-02b4a1d556b0")
+    AdminEntity.findById(burgasAdminId) ?: AdminEntity.new(burgasAdminId) {
+        identity = burgasIdentity
+    }
+    return@suspendTransaction
 }
