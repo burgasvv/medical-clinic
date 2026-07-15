@@ -402,7 +402,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
         return ScheduleDependencyInDoctor(
             id = this.id.value,
             datetime = this.dateTime.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
+                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
             busy = this.busy,
             concluded = this.concluded,
             appointment = this.appointment?.toDependencyInSchedule()
@@ -413,7 +413,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
         return ScheduleDependencyInAppointment(
             id = this.id.value,
             datetime = this.dateTime.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
+                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
             busy = this.busy,
             concluded = this.concluded,
             doctor = this.doctor.toDependency()
@@ -424,7 +424,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
         return ScheduleResponse(
             id = this.id.value,
             datetime = this.dateTime.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
+                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
             busy = this.busy,
             concluded = this.concluded,
             doctor = this.doctor.toDependency(),
@@ -526,7 +526,7 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PaymentRequest
             id = this.id.value,
             price = this.price,
             createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm"))
+                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm"))
         )
     }
 
@@ -536,7 +536,7 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PaymentRequest
             appointment = this.appointment.toDependencyInPayment(),
             price = this.price,
             createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm"))
+                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm"))
         )
     }
 }

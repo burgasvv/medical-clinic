@@ -62,6 +62,28 @@ fun Application.configureSecurity() {
                 call.respond(HttpStatusCode.Unauthorized, exceptionResponse)
             }
         }
+        session<AuthToken>("session-auth-doctor") {
+            validate { if (it.authority == Authority.DOCTOR) it else null }
+            challenge {
+                val exceptionResponse = ExceptionResponse(
+                    status = HttpStatusCode.Unauthorized.description,
+                    code = HttpStatusCode.Unauthorized.value,
+                    message = "Not authorized in session, authority must be DOCTOR"
+                )
+                call.respond(HttpStatusCode.Unauthorized, exceptionResponse)
+            }
+        }
+        session<AuthToken>("session-auth-patient") {
+            validate { if (it.authority == Authority.PATIENT) it else null }
+            challenge {
+                val exceptionResponse = ExceptionResponse(
+                    status = HttpStatusCode.Unauthorized.description,
+                    code = HttpStatusCode.Unauthorized.value,
+                    message = "Not authorized in session, authority must be PATIENT"
+                )
+                call.respond(HttpStatusCode.Unauthorized, exceptionResponse)
+            }
+        }
     }
 
     install(DoubleReceive)

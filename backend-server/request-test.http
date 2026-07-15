@@ -85,3 +85,48 @@ Content-Type: application/json
 ###
 DELETE /api/v1/admins/delete?adminId=ce3fc235-91a9-45a2-9cfb-9d35c9ed0ff8
 Host: localhost:9000
+
+
+
+### Patient Requests
+
+
+
+###
+GET /api/v1/patients
+Host: localhost:9000
+
+###
+GET /api/v1/patients/by-id?patientId=23e26053-084c-4d1b-b08b-c03219d15817
+Host: localhost:9000
+
+###
+POST /api/v1/patients/create
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "identity": {
+        "email": "osipkin@gmail.com",
+        "password": "osipkin",
+        "phone": "+79563214578",
+        "firstname": "Осипкин",
+        "lastname": "Алексей",
+        "patronymic": "Олегович"
+    },
+    "passport": "4567 908754"
+}
+
+###
+PUT /api/v1/patients/update
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "id": "23e26053-084c-4d1b-b08b-c03219d15817",
+    "passport": "1985 982475"
+}
+
+###
+DELETE /api/v1/patients/delete?patientId=afa5e35e-bbe3-4d9d-8256-f305148d1eba
+Host: localhost:9000
