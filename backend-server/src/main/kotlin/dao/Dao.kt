@@ -2,7 +2,6 @@ package org.burgas.dao
 
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
-import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.io.readByteArray
 import org.burgas.database.*
 import org.burgas.dto.*
@@ -11,7 +10,6 @@ import org.jetbrains.exposed.v1.core.statements.api.ExposedBlob
 import org.jetbrains.exposed.v1.dao.java.UUIDEntity
 import org.jetbrains.exposed.v1.dao.java.UUIDEntityClass
 import org.mindrot.jbcrypt.BCrypt
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 interface Uploader {
@@ -159,8 +157,7 @@ class AdminEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<AdminRequest>,
         return AdminResponse(
             id = this.id.value,
             identity = this.identity.toResponse(),
-            createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm"))
+            createdAt = this.createdAt
         )
     }
 }
@@ -194,8 +191,7 @@ class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PatientRequest
             id = this.id.value,
             identity = this.identity.toResponse(),
             passport = this.passport,
-            createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
+            createdAt = this.createdAt,
             appointments = this.appointments.map { it.toDependencyInPatient() }
         )
     }
@@ -313,8 +309,7 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DoctorRequest>,
             category = this.category?.name,
             about = this.about,
             image = this.image?.toResponse(),
-            createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm"))
+            createdAt = this.createdAt
         )
     }
 
@@ -325,8 +320,7 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DoctorRequest>,
             category = this.category?.toDependency(),
             about = this.about,
             image = this.image?.toResponse(),
-            createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
+            createdAt = this.createdAt,
             services = this.services.map { it.toDependency() },
             schedules = this.schedules.map { it.toDependencyInDoctor() }
         )
@@ -401,8 +395,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
     suspend fun toDependencyInDoctor(): ScheduleDependencyInDoctor {
         return ScheduleDependencyInDoctor(
             id = this.id.value,
-            datetime = this.dateTime.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
+            datetime = this.dateTime,
             busy = this.busy,
             concluded = this.concluded,
             appointment = this.appointment?.toDependencyInSchedule()
@@ -412,8 +405,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
     suspend fun toDependencyInAppointment(): ScheduleDependencyInAppointment {
         return ScheduleDependencyInAppointment(
             id = this.id.value,
-            datetime = this.dateTime.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
+            datetime = this.dateTime,
             busy = this.busy,
             concluded = this.concluded,
             doctor = this.doctor.toDependency()
@@ -423,8 +415,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
     override suspend fun toResponse(): ScheduleResponse {
         return ScheduleResponse(
             id = this.id.value,
-            datetime = this.dateTime.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm")),
+            datetime = this.dateTime,
             busy = this.busy,
             concluded = this.concluded,
             doctor = this.doctor.toDependency(),
@@ -525,8 +516,7 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PaymentRequest
         return PaymentDependency(
             id = this.id.value,
             price = this.price,
-            createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm"))
+            createdAt = this.createdAt
         )
     }
 
@@ -535,8 +525,7 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PaymentRequest
             id = this.id.value,
             appointment = this.appointment.toDependencyInPayment(),
             price = this.price,
-            createdAt = this.createdAt.toJavaLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm"))
+            createdAt = this.createdAt
         )
     }
 }

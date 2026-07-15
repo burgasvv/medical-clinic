@@ -81,7 +81,7 @@ data class AdminResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     val identity: IdentityResponse? = null,
-    val createdAt: String? = null
+    val createdAt: LocalDateTime? = null
 ) : Response
 
 @Serializable
@@ -98,7 +98,7 @@ data class PatientResponse(
     val id: UUID? = null,
     val identity: IdentityResponse? = null,
     val passport: String? = null,
-    val createdAt: String? = null,
+    val createdAt: LocalDateTime? = null,
     val appointments: List<AppointmentDependencyInPatient>? = null
 ) : Response
 
@@ -173,7 +173,7 @@ data class DoctorDependency(
     val category: String? = null,
     val about: String? = null,
     val image: ImageResponse? = null,
-    val createdAt: String? = null
+    val createdAt: LocalDateTime? = null
 ) : Dependency
 
 @Serializable
@@ -184,7 +184,7 @@ data class DoctorResponse(
     val category: CategoryDependency? = null,
     val about: String? = null,
     val image: ImageResponse? = null,
-    val createdAt: String? = null,
+    val createdAt: LocalDateTime? = null,
     val services: List<ServiceDependency>? = null,
     val schedules: List<ScheduleDependencyInDoctor>? = null
 ) : Response
@@ -232,7 +232,7 @@ data class ScheduleRequest(
 data class ScheduleDependencyInDoctor(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val datetime: String? = null,
+    val datetime: LocalDateTime? = null,
     val busy: Boolean? = null,
     val concluded: Boolean? = null,
     val appointment: AppointmentDependencyInSchedule? = null
@@ -242,7 +242,7 @@ data class ScheduleDependencyInDoctor(
 data class ScheduleDependencyInAppointment(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val datetime: String? = null,
+    val datetime: LocalDateTime? = null,
     val busy: Boolean? = null,
     val concluded: Boolean? = null,
     val doctor: DoctorDependency? = null
@@ -252,7 +252,7 @@ data class ScheduleDependencyInAppointment(
 data class ScheduleResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val datetime: String? = null,
+    val datetime: LocalDateTime? = null,
     val busy: Boolean? = null,
     val concluded: Boolean? = null,
     val doctor: DoctorDependency? = null,
@@ -330,7 +330,7 @@ data class PaymentDependency(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     val price: Double? = null,
-    val createdAt: String? = null
+    val createdAt: LocalDateTime? = null
 ) : Dependency
 
 @Serializable
@@ -339,5 +339,5 @@ data class PaymentResponse(
     val id: UUID? = null,
     val appointment: AppointmentDependencyInPayment? = null,
     val price: Double? = null,
-    val createdAt: String? = null
+    val createdAt: LocalDateTime? = null
 ) : Response
