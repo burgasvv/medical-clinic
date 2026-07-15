@@ -130,3 +130,76 @@ Content-Type: application/json
 ###
 DELETE /api/v1/patients/delete?patientId=afa5e35e-bbe3-4d9d-8256-f305148d1eba
 Host: localhost:9000
+
+
+
+### Department Requests
+
+
+
+###
+GET /api/v1/departments
+Host: localhost:9000
+
+###
+GET /api/v1/departments/by-id?departmentId=cce124e9-84e9-4d87-a2bf-6d0ad40e5561
+Host: localhost:9000
+
+###
+POST /api/v1/departments/create
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "name": "Отделение Кардиологии",
+    "description": "Специальное кардиологическое медицинское подразделение"
+}
+
+###
+PUT /api/v1/departments/update
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "id": "108cd37f-3527-46cb-8d04-c501e2543304",
+    "description": "Специальное кардиологическое медицинское подразделение"
+}
+
+###
+DELETE /api/v1/departments/delete?departmentId=108cd37f-3527-46cb-8d04-c501e2543304
+Host: localhost:9000
+
+
+
+### Category Requests
+
+
+
+###
+GET /api/v1/categories/by-id?categoryId=4e81afff-5be6-45b1-9214-15cab6d6c16c
+Host: localhost:9000
+
+###
+POST /api/v1/categories/create
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "name": "Кардиолог",
+    "description": "Специалист, который занимается диагностикой, лечением и профилактикой заболеваний сердца и кровеносных сосудов.",
+    "departmentId": "cce124e9-84e9-4d87-a2bf-6d0ad40e5561"
+}
+
+###
+PUT /api/v1/categories/update
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "id": "3ccaad00-aa6d-4215-92eb-98cb283b4da1",
+    "description": "Специалист, который занимается диагностикой, лечением и профилактикой заболеваний сердца и кровеносных сосудов."
+}
+
+###
+DELETE /api/v1/categories/delete?categoryId=3ccaad00-aa6d-4215-92eb-98cb283b4da1
+Host: localhost:9000

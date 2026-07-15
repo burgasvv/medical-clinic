@@ -4,6 +4,8 @@ import io.ktor.server.application.Application
 import org.burgas.database.configureDatabase
 import org.burgas.koin.configureKoin
 import org.burgas.router.configureAdminRouter
+import org.burgas.router.configureCategoryRouter
+import org.burgas.router.configureDepartmentRouter
 import org.burgas.router.configureIdentityRouter
 import org.burgas.router.configurePatientRouter
 import org.burgas.router.configureSecurityRouter
@@ -23,4 +25,6 @@ suspend fun Application.modules() {
     configureIdentityRouter()
     configureAdminRouter()
     configurePatientRouter()
+    configureDepartmentRouter()
+    configureCategoryRouter()
 }

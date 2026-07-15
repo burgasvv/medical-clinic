@@ -38,6 +38,8 @@ dependencies {
     implementation("io.insert-koin:koin-ktor:4.2.1")
     implementation("io.insert-koin:koin-logger-slf4j:4.2.1")
     implementation("io.ktor:ktor-server-auth:3.5.0")
+    implementation("org.apache.poi:poi:5.5.1")
+    implementation("org.apache.poi:poi-ooxml:5.5.1")
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)

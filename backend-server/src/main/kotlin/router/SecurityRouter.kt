@@ -51,7 +51,10 @@ fun Application.configureSecurityRouter() {
                 post("/login") {
                     val authToken = call.sessions.get(AuthToken::class)
                     if (authToken != null) {
-                        call.respond(HttpStatusCode.OK, "You already logged in: ${authToken.email}")
+                        call.respond(
+                            HttpStatusCode.OK,
+                            "You already logged in: ${authToken.email} :: ${authToken.authority}"
+                        )
                     } else {
                         val credential = call.principal<UserPasswordCredential>()
                             ?: throw IllegalArgumentException("Input auth data in login")
@@ -63,7 +66,10 @@ fun Application.configureSecurityRouter() {
                         if (identity != null) {
                             val authToken = AuthToken(email = identity.email, authority = identity.authority)
                             call.sessions.set(authToken, AuthToken::class)
-                            call.respond(HttpStatusCode.OK, "You successfully logged in: ${authToken.email}")
+                            call.respond(
+                                HttpStatusCode.OK,
+                                "You successfully logged in: ${authToken.email} :: ${authToken.authority}"
+                            )
                         } else {
                             throw IllegalArgumentException("Authentication identity not found")
                         }
