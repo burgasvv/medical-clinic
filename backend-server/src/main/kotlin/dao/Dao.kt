@@ -143,15 +143,16 @@ class AdminEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<AdminRequest>,
     var createdAt by AdminTable.createdAt
 
     override fun create(request: AdminRequest) {
-        request.identityRequest!!.let {
-            val identityEntity = IdentityEntity.new { this.create(it) }
-            identityEntity.authority = Authority.ADMIN
-            this.identity = identityEntity
+        request.identity!!.let {
+            this.identity = IdentityEntity.new {
+                this.create(it)
+                authority = Authority.ADMIN
+            }
         }
     }
 
     override fun update(request: AdminRequest) {
-        request.identityRequest?.let { this.identity.update(it) }
+        request.identity?.let { this.identity.update(it) }
     }
 
     override suspend fun toResponse(): AdminResponse {
@@ -174,16 +175,17 @@ class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PatientRequest
     val appointments by AppointmentEntity.referrersOn(AppointmentTable.patientId)
 
     override fun create(request: PatientRequest) {
-        request.identityRequest!!.let {
-            val identityEntity = IdentityEntity.new { this.create(it) }
-            identityEntity.authority = Authority.PATIENT
-            this.identity = identityEntity
+        request.identity!!.let {
+            this.identity = IdentityEntity.new {
+                this.create(it)
+                authority = Authority.PATIENT
+            }
         }
         request.passport!!.let { this.passport = it }
     }
 
     override fun update(request: PatientRequest) {
-        request.identityRequest?.let { this.identity.update(it) }
+        request.identity?.let { this.identity.update(it) }
         request.passport?.let { this.passport = it }
     }
 
@@ -288,17 +290,18 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DoctorRequest>,
     val schedules by ScheduleEntity.referrersOn(ScheduleTable.doctorId)
 
     override fun create(request: DoctorRequest) {
-        request.identityRequest!!.let {
-            val identityEntity = IdentityEntity.new { this.create(it) }
-            identityEntity.authority = Authority.DOCTOR
-            this.identity = identityEntity
+        request.identity!!.let {
+            this.identity = IdentityEntity.new {
+                this.create(it)
+                authority = Authority.DOCTOR
+            }
         }
         request.categoryId!!.let { this.category = CategoryEntity.findById(it) }
         request.about?.let { this.about = it }
     }
 
     override fun update(request: DoctorRequest) {
-        request.identityRequest?.let { this.identity.update(it) }
+        request.identity?.let { this.identity.update(it) }
         request.categoryId?.let { this.category = CategoryEntity.findById(it) }
         request.about?.let { this.about = it }
     }
@@ -378,18 +381,21 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
     var dateTime by ScheduleTable.dateTime
     var doctor by DoctorEntity.referencedOn(ScheduleTable.doctorId)
     var busy by ScheduleTable.busy
+    var concluded by ScheduleTable.concluded
     val appointment by AppointmentEntity.optionalBackReferencedOn(AppointmentTable.scheduleId)
 
     override fun create(request: ScheduleRequest) {
         request.datetime!!.let { this.dateTime = it }
         request.doctorId!!.let { this.doctor = DoctorEntity.findById(it)!! }
         request.busy?.let { this.busy = it }
+        request.concluded?.let { this.concluded = it }
     }
 
     override fun update(request: ScheduleRequest) {
         request.datetime?.let { this.dateTime = it }
         request.doctorId?.let { this.doctor = DoctorEntity.findById(it)!! }
         request.busy?.let { this.busy = it }
+        request.concluded?.let { this.concluded = it }
     }
 
     suspend fun toDependencyInDoctor(): ScheduleDependencyInDoctor {
@@ -398,6 +404,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
             datetime = this.dateTime.toJavaLocalDateTime()
                 .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
             busy = this.busy,
+            concluded = this.concluded,
             appointment = this.appointment?.toDependencyInSchedule()
         )
     }
@@ -408,6 +415,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
             datetime = this.dateTime.toJavaLocalDateTime()
                 .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
             busy = this.busy,
+            concluded = this.concluded,
             doctor = this.doctor.toDependency()
         )
     }
@@ -418,6 +426,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
             datetime = this.dateTime.toJavaLocalDateTime()
                 .format(DateTimeFormatter.ofPattern("dd.MMMM.yyyy, hh:mm")),
             busy = this.busy,
+            concluded = this.concluded,
             doctor = this.doctor.toDependency(),
             appointment = this.appointment?.toDependencyInSchedule()
         )
@@ -432,7 +441,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<Appointmen
     var patient by PatientEntity.referencedOn(AppointmentTable.patientId)
     var service by ServiceEntity.referencedOn(AppointmentTable.serviceId)
     var document by DocumentEntity.optionalReferencedOn(AppointmentTable.documentId)
-    var concluded by AppointmentTable.concluded
     var paid by AppointmentTable.paid
     val payment by PaymentEntity.optionalBackReferencedOn(PaymentTable.appointmentId)
 
@@ -440,7 +448,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<Appointmen
         request.scheduleId!!.let { this.schedule = ScheduleEntity.findById(it)!! }
         request.patientId!!.let { this.patient = PatientEntity.findById(it)!! }
         request.serviceId!!.let { this.service = ServiceEntity.findById(it)!! }
-        request.concluded?.let { this.concluded = it }
         request.paid?.let { this.paid = it }
     }
 
@@ -448,7 +455,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<Appointmen
         request.scheduleId?.let { this.schedule = ScheduleEntity.findById(it)!! }
         request.patientId?.let { this.patient = PatientEntity.findById(it)!! }
         request.serviceId?.let { this.service = ServiceEntity.findById(it)!! }
-        request.concluded?.let { this.concluded = it }
         request.paid?.let { this.paid = it }
     }
 
@@ -458,7 +464,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<Appointmen
             patient = this.patient.toResponse(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            concluded = this.concluded,
             paid = this.paid
         )
     }
@@ -469,7 +474,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<Appointmen
             schedule = this.schedule.toDependencyInAppointment(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            concluded = this.concluded,
             paid = this.paid,
             payment = this.payment?.toDependency()
         )
@@ -481,7 +485,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<Appointmen
             schedule = this.schedule.toDependencyInAppointment(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            concluded = this.concluded,
             paid = this.paid,
             patient = this.patient.toResponse()
         )
@@ -494,7 +497,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<Appointmen
             patient = this.patient.toResponse(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            concluded = this.concluded,
             paid = this.paid,
             payment = this.payment?.toDependency()
         )

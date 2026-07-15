@@ -27,6 +27,7 @@ dependencies {
     implementation(ktorLibs.server.cors)
     implementation(ktorLibs.server.csrf)
     implementation(libs.logback.classic)
+    implementation(ktorLibs.server.doubleReceive)
     implementation("org.jetbrains.exposed:exposed-core:1.3.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:1.3.0")
     implementation("org.jetbrains.exposed:exposed-dao:1.3.0")

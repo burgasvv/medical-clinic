@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.csrf.*
+import io.ktor.server.plugins.doublereceive.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
@@ -56,12 +57,14 @@ fun Application.configureSecurity() {
                 val exceptionResponse = ExceptionResponse(
                     status = HttpStatusCode.Unauthorized.description,
                     code = HttpStatusCode.Unauthorized.value,
-                    message = "Not authorized in session, must be ADMIN"
+                    message = "Not authorized in session, authority must be ADMIN"
                 )
                 call.respond(HttpStatusCode.Unauthorized, exceptionResponse)
             }
         }
     }
+
+    install(DoubleReceive)
 
     install(StatusPages) {
         exception<Throwable> { call, cause ->
@@ -76,8 +79,11 @@ fun Application.configureSecurity() {
 
     install(Sessions) {
         cookie<AuthToken>("AUTH_TOKEN") {
+            cookie.path = "/"
+            cookie.httpOnly = true
+            cookie.secure = false
+            cookie.extensions["SameSite"] = "lax"
             val secretKey = "000102030405060708090a0b0c0d0e0f"
-            cookie.httpOnly = false
             transform(SessionTransportTransformerMessageAuthentication(secretKey.toByteArray()))
         }
     }

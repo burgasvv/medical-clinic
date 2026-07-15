@@ -29,3 +29,59 @@ Content-Type: application/json
     "id": "6d8c7d99-0a45-454d-9bf2-cc0c8d2bd079",
     "password": "burgasvv"
 }
+
+###
+PUT /api/v1/identities/change-status
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "id": "4fb21934-d4cb-42b2-803c-888d104ef46d",
+    "status": true
+}
+
+
+
+### Admin Requests
+
+
+
+###
+GET /api/v1/admins
+Host: localhost:9000
+
+###
+GET /api/v1/admins/by-id?adminId=a091ed91-7446-4009-a160-02b4a1d556b0
+Host: localhost:9000
+
+###
+POST /api/v1/admins/create
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "identity": {
+        "email": "zagor@gmail.com",
+        "password": "zagor",
+        "phone": "+79563214589",
+        "firstname": "Загорулько",
+        "lastname": "Борис",
+        "patronymic": "Юрьевич"
+    }
+}
+
+###
+PUT /api/v1/admins/update
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "id": "ce3fc235-91a9-45a2-9cfb-9d35c9ed0ff8",
+    "identity": {
+        "phone": "+75461239674"
+    }
+}
+
+###
+DELETE /api/v1/admins/delete?adminId=ce3fc235-91a9-45a2-9cfb-9d35c9ed0ff8
+Host: localhost:9000

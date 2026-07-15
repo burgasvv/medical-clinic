@@ -20,9 +20,6 @@ data class ExceptionResponse(
 )
 
 @Serializable
-data class CsrfToken(@Serializable(with = UUIDSerializer::class) val token: UUID)
-
-@Serializable
 data class AuthToken(
     val email: String,
     val authority: Authority
@@ -76,7 +73,7 @@ data class IdentityResponse(
 data class AdminRequest(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val identityRequest: IdentityRequest? = null
+    val identity: IdentityRequest? = null
 ) : Request
 
 @Serializable
@@ -91,7 +88,7 @@ data class AdminResponse(
 data class PatientRequest(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val identityRequest: IdentityRequest? = null,
+    val identity: IdentityRequest? = null,
     val passport: String? = null
 ) : Request
 
@@ -162,7 +159,7 @@ data class CategoryResponse(
 data class DoctorRequest(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val identityRequest: IdentityRequest? = null,
+    val identity: IdentityRequest? = null,
     @Serializable(with = UUIDSerializer::class)
     val categoryId: UUID? = null,
     val about: String? = null
@@ -227,7 +224,8 @@ data class ScheduleRequest(
     val datetime: LocalDateTime? = null,
     @Serializable(with = UUIDSerializer::class)
     val doctorId: UUID? = null,
-    val busy: Boolean? = null
+    val busy: Boolean? = null,
+    val concluded: Boolean? = null
 ) : Request
 
 @Serializable
@@ -236,6 +234,7 @@ data class ScheduleDependencyInDoctor(
     val id: UUID? = null,
     val datetime: String? = null,
     val busy: Boolean? = null,
+    val concluded: Boolean? = null,
     val appointment: AppointmentDependencyInSchedule? = null
 )
 
@@ -245,6 +244,7 @@ data class ScheduleDependencyInAppointment(
     val id: UUID? = null,
     val datetime: String? = null,
     val busy: Boolean? = null,
+    val concluded: Boolean? = null,
     val doctor: DoctorDependency? = null
 )
 
@@ -254,6 +254,7 @@ data class ScheduleResponse(
     val id: UUID? = null,
     val datetime: String? = null,
     val busy: Boolean? = null,
+    val concluded: Boolean? = null,
     val doctor: DoctorDependency? = null,
     val appointment: AppointmentDependencyInSchedule? = null
 ) : Response
@@ -268,7 +269,6 @@ data class AppointmentRequest(
     val patientId: UUID? = null,
     @Serializable(with = UUIDSerializer::class)
     val serviceId: UUID? = null,
-    val concluded: Boolean? = null,
     val paid: Boolean? = null
 ) : Request
 
@@ -279,7 +279,6 @@ data class AppointmentDependencyInSchedule(
     val patient: PatientResponse? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
-    val concluded: Boolean? = null,
     val paid: Boolean? = null
 )
 
@@ -291,7 +290,6 @@ data class AppointmentDependencyInPayment(
     val patient: PatientResponse? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
-    val concluded: Boolean? = null,
     val paid: Boolean? = null
 )
 
@@ -302,7 +300,6 @@ data class AppointmentDependencyInPatient(
     val schedule: ScheduleDependencyInAppointment? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
-    val concluded: Boolean? = null,
     val paid: Boolean? = null,
     val payment: PaymentDependency? = null
 )
@@ -315,7 +312,6 @@ data class AppointmentResponse(
     val patient: PatientResponse? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
-    val concluded: Boolean? = null,
     val paid: Boolean? = null,
     val payment: PaymentDependency? = null
 ) : Response

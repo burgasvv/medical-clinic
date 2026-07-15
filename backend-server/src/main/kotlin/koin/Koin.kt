@@ -1,6 +1,7 @@
 package org.burgas.koin
 
 import io.ktor.server.application.*
+import org.burgas.service.AdminService
 import org.burgas.service.DocumentService
 import org.burgas.service.IdentityService
 import org.burgas.service.ImageService
@@ -15,6 +16,7 @@ fun Application.configureKoin() {
         singleOf(::ImageService)
         singleOf(::DocumentService)
         singleOf(::IdentityService)
+        singleOf(::AdminService)
     }
 
     install(Koin) {

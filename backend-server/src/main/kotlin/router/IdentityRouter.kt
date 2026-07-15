@@ -2,13 +2,11 @@
 
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.get
-import io.ktor.server.sessions.sessions
-import io.ktor.util.AttributeKey
+import io.ktor.server.sessions.*
 import org.burgas.dao.IdentityEntity
 import org.burgas.database.DatabaseConnection
 import org.burgas.dto.AuthToken
@@ -17,7 +15,7 @@ import org.burgas.service.IdentityService
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
 
-fun Application.configureIdentityRouter() {
+ fun Application.configureIdentityRouter() {
 
     val identityService by inject<IdentityService>()
 
@@ -33,7 +31,6 @@ fun Application.configureIdentityRouter() {
                     ?: throw IllegalArgumentException("Not found identity intercept for changing password")
             }
             if (identityEntity.email == authToken.email) {
-                call.attributes[AttributeKey<IdentityRequest>("identityRequest")] = identityRequest
                 proceed()
             } else {
                 throw IllegalArgumentException("Not authorized intercept for changing password")
@@ -49,10 +46,9 @@ fun Application.configureIdentityRouter() {
                     ?: throw IllegalArgumentException("Not found identity intercept for status")
             }
             if (identityEntity.email != authToken.email) {
-                call.attributes[AttributeKey<IdentityRequest>("identityRequest")] = identityRequest
                 proceed()
             } else {
-                throw IllegalArgumentException("Not authorized intercept for changing status")
+                throw IllegalArgumentException("Not authorized intercept for changing status. Emails matched")
             }
 
         } else {
@@ -67,7 +63,7 @@ fun Application.configureIdentityRouter() {
             authenticate("session-auth") {
 
                 put("/change-password") {
-                    val identityRequest = call.attributes[AttributeKey<IdentityRequest>("identityRequest")]
+                    val identityRequest = call.receive<IdentityRequest>()
                     identityService.changePassword(identityRequest)
                     call.respond(HttpStatusCode.OK)
                 }
@@ -76,7 +72,7 @@ fun Application.configureIdentityRouter() {
             authenticate("session-auth-admin") {
 
                 put("/change-status") {
-                    val identityRequest = call.attributes[AttributeKey<IdentityRequest>("identityRequest")]
+                    val identityRequest = call.receive<IdentityRequest>()
                     identityService.changeStatus(identityRequest)
                     call.respond(HttpStatusCode.OK)
                 }
