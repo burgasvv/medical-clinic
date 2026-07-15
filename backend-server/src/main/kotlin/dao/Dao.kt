@@ -12,6 +12,10 @@ import org.jetbrains.exposed.v1.dao.java.UUIDEntityClass
 import org.mindrot.jbcrypt.BCrypt
 import java.util.*
 
+interface File
+
+interface Dao
+
 interface Uploader {
     fun upload(partData: PartData)
 }
@@ -32,7 +36,7 @@ interface ResponseMapper<R : Response> {
     suspend fun toResponse(): R
 }
 
-class ImageEntity(id: EntityID<UUID>) : UUIDEntity(id), Uploader, ResponseMapper<ImageResponse> {
+class ImageEntity(id: EntityID<UUID>) : UUIDEntity(id), File, Uploader, ResponseMapper<ImageResponse> {
     companion object : UUIDEntityClass<ImageEntity>(ImageTable)
 
     var name by ImageTable.name
@@ -62,7 +66,7 @@ class ImageEntity(id: EntityID<UUID>) : UUIDEntity(id), Uploader, ResponseMapper
     }
 }
 
-class DocumentEntity(id: EntityID<UUID>) : UUIDEntity(id), Uploader, ResponseMapper<DocumentResponse> {
+class DocumentEntity(id: EntityID<UUID>) : UUIDEntity(id), File, Uploader, ResponseMapper<DocumentResponse> {
     companion object : UUIDEntityClass<DocumentEntity>(DocumentTable)
 
     var name by DocumentTable.name
@@ -89,7 +93,7 @@ class DocumentEntity(id: EntityID<UUID>) : UUIDEntity(id), Uploader, ResponseMap
     }
 }
 
-class IdentityEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<IdentityRequest>,
+class IdentityEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<IdentityRequest>,
     Modifier<IdentityRequest>, ResponseMapper<IdentityResponse> {
     companion object : UUIDEntityClass<IdentityEntity>(IdentityTable)
 
@@ -133,7 +137,7 @@ class IdentityEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<IdentityReque
     }
 }
 
-class AdminEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<AdminRequest>,
+class AdminEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<AdminRequest>,
     Modifier<AdminRequest>, ResponseMapper<AdminResponse> {
     companion object : UUIDEntityClass<AdminEntity>(AdminTable)
 
@@ -162,7 +166,7 @@ class AdminEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<AdminRequest>,
     }
 }
 
-class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PatientRequest>,
+class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PatientRequest>,
     Modifier<PatientRequest>, ResponseMapper<PatientResponse> {
     companion object : UUIDEntityClass<PatientEntity>(PatientTable)
 
@@ -197,7 +201,7 @@ class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PatientRequest
     }
 }
 
-class DepartmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DepartmentRequest>,
+class DepartmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<DepartmentRequest>,
     Modifier<DepartmentRequest>, DependencyMapper<DepartmentDependency>, ResponseMapper<DepartmentResponse> {
     companion object : UUIDEntityClass<DepartmentEntity>(DepartmentTable)
 
@@ -233,7 +237,7 @@ class DepartmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DepartmentR
     }
 }
 
-class CategoryEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<CategoryRequest>,
+class CategoryEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<CategoryRequest>,
     Modifier<CategoryRequest>, DependencyMapper<CategoryDependency>, ResponseMapper<CategoryResponse> {
     companion object : UUIDEntityClass<CategoryEntity>(CategoryTable)
 
@@ -273,7 +277,7 @@ class CategoryEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<CategoryReque
     }
 }
 
-class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DoctorRequest>,
+class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<DoctorRequest>,
     Modifier<DoctorRequest>, DependencyMapper<DoctorDependency>, ResponseMapper<DoctorResponse> {
     companion object : UUIDEntityClass<DoctorEntity>(DoctorTable)
 
@@ -327,7 +331,7 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<DoctorRequest>,
     }
 }
 
-class ServiceEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ServiceRequest>,
+class ServiceEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<ServiceRequest>,
     Modifier<ServiceRequest>, DependencyMapper<ServiceDependency>, ResponseMapper<ServiceResponse> {
     companion object : UUIDEntityClass<ServiceEntity>(ServiceTable)
 
@@ -368,7 +372,7 @@ class ServiceEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ServiceRequest
     }
 }
 
-class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleRequest>,
+class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<ScheduleRequest>,
     Modifier<ScheduleRequest>, ResponseMapper<ScheduleResponse> {
     companion object : UUIDEntityClass<ScheduleEntity>(ScheduleTable)
 
@@ -424,7 +428,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<ScheduleReque
     }
 }
 
-class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<AppointmentRequest>,
+class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<AppointmentRequest>,
     Modifier<AppointmentRequest>, ResponseMapper<AppointmentResponse> {
     companion object : UUIDEntityClass<AppointmentEntity>(AppointmentTable)
 
@@ -494,7 +498,7 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<Appointmen
     }
 }
 
-class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Creator<PaymentRequest>,
+class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PaymentRequest>,
     Modifier<PaymentRequest>, DependencyMapper<PaymentDependency>, ResponseMapper<PaymentResponse> {
     companion object : UUIDEntityClass<PaymentEntity>(PaymentTable)
 
