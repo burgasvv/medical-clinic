@@ -24,6 +24,7 @@ fun Application.configureKoin() {
             )
         }
         singleOf(::MedicalService)
+        singleOf(::ScheduleService)
     }
 
     install(Koin) {

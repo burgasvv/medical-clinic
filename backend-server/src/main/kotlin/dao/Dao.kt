@@ -386,7 +386,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
 
     override fun create(request: ScheduleRequest) {
         request.datetime!!.let {
-            if (this.dateTime.toJavaLocalDateTime().isAfter(LocalDateTime.now())) {
+            if (it.toJavaLocalDateTime().isAfter(LocalDateTime.now())) {
                 this.dateTime = it
             } else {
                 throw IllegalArgumentException("Input datetime is passed")
@@ -399,7 +399,7 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
 
     override fun update(request: ScheduleRequest) {
         request.datetime?.let {
-            if (this.dateTime.toJavaLocalDateTime().isAfter(LocalDateTime.now())) {
+            if (it.toJavaLocalDateTime().isAfter(LocalDateTime.now())) {
                 this.dateTime = it
             } else {
                 throw IllegalArgumentException("Input datetime is passed")
@@ -442,8 +442,8 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
     }
 }
 
-class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<AppointmentRequest>,
-    Modifier<AppointmentRequest>, ResponseMapper<AppointmentResponse> {
+class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
+    Creator<AppointmentRequest>, ResponseMapper<AppointmentResponse> {
     companion object : UUIDEntityClass<AppointmentEntity>(AppointmentTable)
 
     var schedule by ScheduleEntity.referencedOn(AppointmentTable.scheduleId)
@@ -454,16 +454,19 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Appoi
     val payment by PaymentEntity.optionalBackReferencedOn(PaymentTable.appointmentId)
 
     override fun create(request: AppointmentRequest) {
-        request.scheduleId!!.let { this.schedule = ScheduleEntity.findById(it)!! }
+        val scheduleEntity = request.scheduleId!!.let {
+            this.schedule = ScheduleEntity.findById(it)!!
+            this.schedule
+        }
         request.patientId!!.let { this.patient = PatientEntity.findById(it)!! }
-        request.serviceId!!.let { this.service = ServiceEntity.findById(it)!! }
-        request.paid?.let { this.paid = it }
-    }
-
-    override fun update(request: AppointmentRequest) {
-        request.scheduleId?.let { this.schedule = ScheduleEntity.findById(it)!! }
-        request.patientId?.let { this.patient = PatientEntity.findById(it)!! }
-        request.serviceId?.let { this.service = ServiceEntity.findById(it)!! }
+        request.serviceId!!.let {
+            val serviceEntity = ServiceEntity.findById(it)!!
+            if (scheduleEntity.doctor.services.map { service -> service.id.value }.contains(serviceEntity.id.value)) {
+                this.service = serviceEntity
+            } else {
+                throw IllegalArgumentException("Doctor don't have input service in list")
+            }
+        }
         request.paid?.let { this.paid = it }
     }
 
@@ -513,7 +516,7 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Appoi
 }
 
 class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PaymentRequest>,
-    Modifier<PaymentRequest>, DependencyMapper<PaymentDependency>, ResponseMapper<PaymentResponse> {
+    DependencyMapper<PaymentDependency>, ResponseMapper<PaymentResponse> {
     companion object : UUIDEntityClass<PaymentEntity>(PaymentTable)
 
     var appointment by AppointmentEntity.referencedOn(PaymentTable.appointmentId)
@@ -523,11 +526,6 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PaymentRe
     override fun create(request: PaymentRequest) {
         request.appointmentId!!.let { this.appointment = AppointmentEntity.findById(it)!! }
         request.price!!.let { this.price = it }
-    }
-
-    override fun update(request: PaymentRequest) {
-        request.appointmentId?.let { this.appointment = AppointmentEntity.findById(it)!! }
-        request.price?.let { this.price = it }
     }
 
     override suspend fun toDependency(): PaymentDependency {

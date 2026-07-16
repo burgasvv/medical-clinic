@@ -306,3 +306,27 @@ Content-Type: application/json
     "doctorId": "7ca4b966-c1b4-49be-bd0f-9e3802246cd3",
     "serviceId": "ea435d58-8a8e-459d-9cf9-03169bbf6c25"
 }
+
+
+
+### Schedule Requests
+
+
+
+###
+GET /api/v1/schedules/by-id?scheduleId=32b05bda-37ab-4566-b925-af5e44826bb0
+Host: localhost:9000
+
+###
+POST /api/v1/schedules/create
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "datetime": "2026-07-18T15:00",
+    "doctorId": "7ca4b966-c1b4-49be-bd0f-9e3802246cd3"
+}
+
+###
+DELETE /api/v1/schedules/delete?scheduleId=32b05bda-37ab-4566-b925-af5e44826bb0
+Host: localhost:9000
