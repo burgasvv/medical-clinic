@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import org.burgas.service.AdminService
 import org.burgas.service.CategoryService
 import org.burgas.service.DepartmentService
+import org.burgas.service.DoctorService
 import org.burgas.service.DocumentService
 import org.burgas.service.IdentityService
 import org.burgas.service.ImageService
@@ -23,6 +24,7 @@ fun Application.configureKoin() {
         singleOf(::PatientService)
         singleOf(::DepartmentService)
         singleOf(::CategoryService)
+        singleOf(::DoctorService)
     }
 
     install(Koin) {

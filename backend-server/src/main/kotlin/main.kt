@@ -6,6 +6,7 @@ import org.burgas.koin.configureKoin
 import org.burgas.router.configureAdminRouter
 import org.burgas.router.configureCategoryRouter
 import org.burgas.router.configureDepartmentRouter
+import org.burgas.router.configureDoctorRouter
 import org.burgas.router.configureDocumentRouter
 import org.burgas.router.configureIdentityRouter
 import org.burgas.router.configureImageRouter
@@ -19,9 +20,9 @@ fun main(args: Array<String>) {
 }
 
 suspend fun Application.modules() {
+    configureDatabase()
     configureSerialization()
     configureSecurity()
-    configureDatabase()
     configureKoin()
     configureSecurityRouter()
     configureImageRouter()
@@ -31,4 +32,5 @@ suspend fun Application.modules() {
     configurePatientRouter()
     configureDepartmentRouter()
     configureCategoryRouter()
+    configureDoctorRouter()
 }
