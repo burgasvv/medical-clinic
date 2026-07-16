@@ -146,7 +146,6 @@ object ScheduleTable : UUIDTable("schedule") {
         name = "doctor_id", refColumn = DoctorTable.id,
         onDelete = ReferenceOption.CASCADE, onUpdate = ReferenceOption.CASCADE
     )
-    val busy = bool("busy").default(false)
     val concluded = bool("concluded").default(false)
     init {
         uniqueIndex(dateTime, doctorId)
@@ -170,7 +169,6 @@ object AppointmentTable : UUIDTable("appointment") {
         name = "document_id", refColumn = DocumentTable.id,
         onDelete = ReferenceOption.SET_NULL, onUpdate = ReferenceOption.CASCADE
     ).uniqueIndex()
-    val paid = bool("paid").default(false)
 }
 
 object PaymentTable : UUIDTable("payment") {

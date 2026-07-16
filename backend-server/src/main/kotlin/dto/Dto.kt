@@ -232,7 +232,6 @@ data class ScheduleRequest(
     val datetime: LocalDateTime? = null,
     @Serializable(with = UUIDSerializer::class)
     val doctorId: UUID? = null,
-    val busy: Boolean? = null,
     val concluded: Boolean? = null
 ) : Request
 
@@ -241,7 +240,6 @@ data class ScheduleDependencyInDoctor(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     val datetime: LocalDateTime? = null,
-    val busy: Boolean? = null,
     val concluded: Boolean? = null,
     val appointment: AppointmentDependencyInSchedule? = null
 )
@@ -251,7 +249,6 @@ data class ScheduleDependencyInAppointment(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     val datetime: LocalDateTime? = null,
-    val busy: Boolean? = null,
     val concluded: Boolean? = null,
     val doctor: DoctorDependency? = null
 )
@@ -261,7 +258,6 @@ data class ScheduleResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     val datetime: LocalDateTime? = null,
-    val busy: Boolean? = null,
     val concluded: Boolean? = null,
     val doctor: DoctorDependency? = null,
     val appointment: AppointmentDependencyInSchedule? = null
@@ -276,8 +272,7 @@ data class AppointmentRequest(
     @Serializable(with = UUIDSerializer::class)
     val patientId: UUID? = null,
     @Serializable(with = UUIDSerializer::class)
-    val serviceId: UUID? = null,
-    val paid: Boolean? = null
+    val serviceId: UUID? = null
 ) : Request
 
 @Serializable
@@ -287,7 +282,7 @@ data class AppointmentDependencyInSchedule(
     val patient: PatientResponse? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
-    val paid: Boolean? = null
+    val payment: PaymentDependency? = null
 )
 
 @Serializable
@@ -297,8 +292,7 @@ data class AppointmentDependencyInPayment(
     val schedule: ScheduleDependencyInAppointment? = null,
     val patient: PatientResponse? = null,
     val service: ServiceDependency? = null,
-    val document: DocumentResponse? = null,
-    val paid: Boolean? = null
+    val document: DocumentResponse? = null
 )
 
 @Serializable
@@ -308,7 +302,6 @@ data class AppointmentDependencyInPatient(
     val schedule: ScheduleDependencyInAppointment? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
-    val paid: Boolean? = null,
     val payment: PaymentDependency? = null
 )
 
@@ -320,7 +313,6 @@ data class AppointmentResponse(
     val patient: PatientResponse? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
-    val paid: Boolean? = null,
     val payment: PaymentDependency? = null
 ) : Response
 

@@ -380,7 +380,6 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
 
     var dateTime by ScheduleTable.dateTime
     var doctor by DoctorEntity.referencedOn(ScheduleTable.doctorId)
-    var busy by ScheduleTable.busy
     var concluded by ScheduleTable.concluded
     val appointment by AppointmentEntity.optionalBackReferencedOn(AppointmentTable.scheduleId)
 
@@ -393,8 +392,6 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
             }
         }
         request.doctorId!!.let { this.doctor = DoctorEntity.findById(it)!! }
-        request.busy?.let { this.busy = it }
-        request.concluded?.let { this.concluded = it }
     }
 
     override fun update(request: ScheduleRequest) {
@@ -406,7 +403,6 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
             }
         }
         request.doctorId?.let { this.doctor = DoctorEntity.findById(it)!! }
-        request.busy?.let { this.busy = it }
         request.concluded?.let { this.concluded = it }
     }
 
@@ -414,7 +410,6 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
         return ScheduleDependencyInDoctor(
             id = this.id.value,
             datetime = this.dateTime,
-            busy = this.busy,
             concluded = this.concluded,
             appointment = this.appointment?.toDependencyInSchedule()
         )
@@ -424,7 +419,6 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
         return ScheduleDependencyInAppointment(
             id = this.id.value,
             datetime = this.dateTime,
-            busy = this.busy,
             concluded = this.concluded,
             doctor = this.doctor.toDependency()
         )
@@ -434,7 +428,6 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
         return ScheduleResponse(
             id = this.id.value,
             datetime = this.dateTime,
-            busy = this.busy,
             concluded = this.concluded,
             doctor = this.doctor.toDependency(),
             appointment = this.appointment?.toDependencyInSchedule()
@@ -450,12 +443,16 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
     var patient by PatientEntity.referencedOn(AppointmentTable.patientId)
     var service by ServiceEntity.referencedOn(AppointmentTable.serviceId)
     var document by DocumentEntity.optionalReferencedOn(AppointmentTable.documentId)
-    var paid by AppointmentTable.paid
     val payment by PaymentEntity.optionalBackReferencedOn(PaymentTable.appointmentId)
 
     override fun create(request: AppointmentRequest) {
         val scheduleEntity = request.scheduleId!!.let {
-            this.schedule = ScheduleEntity.findById(it)!!
+            val findSchedule = ScheduleEntity.findById(it)!!
+            if (!findSchedule.concluded && findSchedule.appointment == null) {
+                this.schedule = findSchedule
+            } else {
+                throw IllegalArgumentException("Input schedule already busy or concluded")
+            }
             this.schedule
         }
         request.patientId!!.let { this.patient = PatientEntity.findById(it)!! }
@@ -467,7 +464,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
                 throw IllegalArgumentException("Doctor don't have input service in list")
             }
         }
-        request.paid?.let { this.paid = it }
     }
 
     suspend fun toDependencyInSchedule(): AppointmentDependencyInSchedule {
@@ -476,7 +472,7 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
             patient = this.patient.toResponse(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            paid = this.paid
+            payment = this.payment?.toDependency()
         )
     }
 
@@ -486,7 +482,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
             schedule = this.schedule.toDependencyInAppointment(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            paid = this.paid,
             payment = this.payment?.toDependency()
         )
     }
@@ -497,7 +492,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
             schedule = this.schedule.toDependencyInAppointment(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            paid = this.paid,
             patient = this.patient.toResponse()
         )
     }
@@ -509,7 +503,6 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
             patient = this.patient.toResponse(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            paid = this.paid,
             payment = this.payment?.toDependency()
         )
     }
@@ -524,7 +517,14 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PaymentRe
     var createdAt by PaymentTable.createdAt
 
     override fun create(request: PaymentRequest) {
-        request.appointmentId!!.let { this.appointment = AppointmentEntity.findById(it)!! }
+        request.appointmentId!!.let {
+            val appointmentEntity = AppointmentEntity.findById(it)!!
+            if (appointmentEntity.payment == null) {
+                this.appointment = appointmentEntity
+            } else {
+                throw IllegalArgumentException("Appointment already have payment")
+            }
+        }
         request.price!!.let { this.price = it }
     }
 

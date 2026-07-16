@@ -14,6 +14,7 @@ import org.burgas.router.configurePatientRouter
 import org.burgas.router.configureScheduleRouter
 import org.burgas.router.configureSecurityRouter
 import org.burgas.router.configureServiceRouter
+import org.burgas.schedule.configureSchedule
 import org.burgas.security.configureSecurity
 import org.burgas.serialization.configureSerialization
 
@@ -26,6 +27,7 @@ suspend fun Application.modules() {
     configureSerialization()
     configureSecurity()
     configureKoin()
+    configureSchedule()
     configureSecurityRouter()
     configureImageRouter()
     configureDocumentRouter()
