@@ -24,7 +24,7 @@ fun Application.configureSchedule() {
                 ScheduleEntity.find { ScheduleTable.concluded eq false }.forEach {
                     val scheduleTime = it.dateTime.toJavaLocalDateTime()
                     val now = LocalDateTime.now()
-                    if (scheduleTime.isBefore(now) && it.appointment != null) it.concluded = true
+                    if (scheduleTime.isBefore(now) && it.appointment == null) it.concluded = true
                 }
                 delay(10.seconds)
             }

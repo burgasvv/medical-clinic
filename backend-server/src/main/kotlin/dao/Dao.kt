@@ -403,7 +403,6 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
             }
         }
         request.doctorId?.let { this.doctor = DoctorEntity.findById(it)!! }
-        request.concluded?.let { this.concluded = it }
     }
 
     suspend fun toDependencyInDoctor(): ScheduleDependencyInDoctor {
