@@ -218,6 +218,14 @@ data class ServiceResponse(
 ) : Response
 
 @Serializable
+data class DoctorServiceRequest(
+    @Serializable(with = UUIDSerializer::class)
+    val doctorId: UUID,
+    @Serializable(with = UUIDSerializer::class)
+    val serviceId: UUID
+) : Request
+
+@Serializable
 data class ScheduleRequest(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,

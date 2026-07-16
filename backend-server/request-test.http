@@ -8,7 +8,7 @@
 ###
 POST /api/v1/security/login
 Host: localhost:9000
-Authorization: Basic burgasvv@gmail.com burgasvv
+Authorization: Basic zagor@gmail.com zagor
 
 ###
 POST /api/v1/security/logout
@@ -203,3 +203,106 @@ Content-Type: application/json
 ###
 DELETE /api/v1/categories/delete?categoryId=3ccaad00-aa6d-4215-92eb-98cb283b4da1
 Host: localhost:9000
+
+
+
+### Service Requests
+
+
+
+###
+GET /api/v1/services
+Host: localhost:9000
+
+###
+GET /api/v1/services/by-id?serviceId=ea435d58-8a8e-459d-9cf9-03169bbf6c25
+Host: localhost:9000
+
+###
+POST /api/v1/services/create
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "name": "Эхокардиография Сердца",
+    "description": "Безопасный метод УЗИ сердца, оценивающий его анатомию и работу в реальном времени.",
+    "price": 4500
+}
+
+###
+PUT /api/v1/services/update
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "id": "f702d9c1-96f8-4097-9432-ad6ed3c80b16",
+    "name": "Эхокардиография и Узи Сердца"
+}
+
+###
+DELETE /api/v1/services/delete?serviceId=f702d9c1-96f8-4097-9432-ad6ed3c80b16
+Host: localhost:9000
+
+
+
+### Doctor Requests
+
+
+
+###
+GET /api/v1/doctors
+Host: localhost:9000
+
+###
+GET /api/v1/doctors/by-id?doctorId=7ca4b966-c1b4-49be-bd0f-9e3802246cd3
+Host: localhost:9000
+
+###
+POST /api/v1/doctors/create
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "identity": {
+        "email": "zagor@gmail.com",
+        "password": "zagor",
+        "phone": "+79563214589",
+        "firstname": "Загорулько",
+        "lastname": "Борис",
+        "patronymic": "Юрьевич"
+    },
+    "categoryId": "4e81afff-5be6-45b1-9214-15cab6d6c16c",
+    "about": "Личная информация врача-кардиолога Загорулько Бориса Юрьевича"
+}
+
+###
+PUT /api/v1/doctors/update
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "id": "7ca4b966-c1b4-49be-bd0f-9e3802246cd3",
+    "identity": {
+        "phone": "+79631254697"
+    }
+}
+
+###
+PUT /api/v1/doctors/add-service
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "doctorId": "7ca4b966-c1b4-49be-bd0f-9e3802246cd3",
+    "serviceId": "ea435d58-8a8e-459d-9cf9-03169bbf6c25"
+}
+
+###
+PUT /api/v1/doctors/remove-service
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "doctorId": "7ca4b966-c1b4-49be-bd0f-9e3802246cd3",
+    "serviceId": "ea435d58-8a8e-459d-9cf9-03169bbf6c25"
+}

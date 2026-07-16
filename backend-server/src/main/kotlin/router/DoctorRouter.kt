@@ -12,6 +12,7 @@ import org.burgas.database.Authority
 import org.burgas.database.DatabaseConnection
 import org.burgas.dto.AuthToken
 import org.burgas.dto.DoctorRequest
+import org.burgas.dto.DoctorServiceRequest
 import org.burgas.service.DoctorService
 import org.jetbrains.exposed.v1.dao.load
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
@@ -69,16 +70,28 @@ fun Application.configureDoctorRouter() {
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
                 val doctorEntity = DoctorEntity.findById(doctorId)!!.load(DoctorEntity::identity)
-
                 if (doctorEntity.identity.email == authToken.email) {
                     proceed()
                 } else {
-                    throw IllegalArgumentException("Not authorized intercept doctors by delete")
+                    throw IllegalArgumentException("Not authorized intercept doctors by add/remove image")
                 }
             }
 
-        } else {
-            proceed()
+        } else if (
+            call.request.path() == "/api/v1/doctors/add-service" || call.request.path() == "/api/v1/doctors/remove-service"
+        ) {
+            val authToken = (call.sessions.get(AuthToken::class)
+                ?: throw IllegalArgumentException("Not authenticated intercept doctors by add/remove service"))
+            val doctorServiceRequest = call.receive<DoctorServiceRequest>()
+
+            suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
+                val doctorEntity = DoctorEntity.findById(doctorServiceRequest.doctorId)!!.load(DoctorEntity::identity)
+                if (doctorEntity.identity.email == authToken.email) {
+                    proceed()
+                } else {
+                    throw IllegalArgumentException("Not authorized intercept doctors by add/remove service")
+                }
+            }
         }
     }
 
@@ -132,6 +145,18 @@ fun Application.configureDoctorRouter() {
                 delete("/remove-image") {
                     val doctorId = UUID.fromString(call.parameters["doctorId"])
                     doctorService.removeImage(doctorId)
+                    call.respond(HttpStatusCode.OK)
+                }
+
+                put("/add-service") {
+                    val doctorServiceRequest = call.receive<DoctorServiceRequest>()
+                    doctorService.addService(doctorServiceRequest)
+                    call.respond(HttpStatusCode.OK)
+                }
+
+                put("/remove-service") {
+                    val doctorServiceRequest = call.receive<DoctorServiceRequest>()
+                    doctorService.removeService(doctorServiceRequest)
                     call.respond(HttpStatusCode.OK)
                 }
             }

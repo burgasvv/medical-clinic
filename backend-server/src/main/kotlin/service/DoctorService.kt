@@ -5,9 +5,11 @@ import org.burgas.dao.DoctorEntity
 import org.burgas.database.DatabaseConnection
 import org.burgas.dto.DoctorRequest
 import org.burgas.dto.DoctorResponse
+import org.burgas.dto.DoctorServiceRequest
 import org.burgas.service.contract.*
 import org.jetbrains.exposed.v1.dao.load
 import org.jetbrains.exposed.v1.dao.with
+import org.jetbrains.exposed.v1.jdbc.SizedCollection
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import java.sql.Connection
 import java.util.*
@@ -15,7 +17,13 @@ import java.util.*
 class DoctorService : CollectService<DoctorResponse>, ReadService<UUID, DoctorEntity, DoctorResponse>,
     CreateService<DoctorRequest, DoctorResponse>, UpdateService<DoctorRequest, DoctorResponse>, DeleteService<UUID> {
 
-    private val imageService = ImageService()
+    private val imageService: ImageService
+    private val medicalService: MedicalService
+
+    constructor(imageService: ImageService, medicalService: MedicalService) {
+        this.imageService = imageService
+        this.medicalService = medicalService
+    }
 
     override suspend fun findAll(): List<DoctorResponse> = suspendTransaction(
         db = DatabaseConnection.postgres, readOnly = true
@@ -95,6 +103,30 @@ class DoctorService : CollectService<DoctorResponse>, ReadService<UUID, DoctorEn
             image.delete()
         } else {
             throw IllegalArgumentException("Doctor image is null, nothing to remove")
+        }
+    }
+
+    suspend fun addService(doctorServiceRequest: DoctorServiceRequest) = suspendTransaction(
+        db = DatabaseConnection.postgres, transactionIsolation = Connection.TRANSACTION_READ_COMMITTED
+    ) {
+        val doctorEntity = findEntity(doctorServiceRequest.doctorId)
+        val serviceEntity = medicalService.findEntity(doctorServiceRequest.serviceId)
+        if (!doctorEntity.services.map { it.id.value }.contains(serviceEntity.id.value)) {
+            doctorEntity.services = SizedCollection(doctorEntity.services + serviceEntity)
+        } else {
+            throw IllegalArgumentException("Service already in doctor list")
+        }
+    }
+
+    suspend fun removeService(doctorServiceRequest: DoctorServiceRequest) = suspendTransaction(
+        db = DatabaseConnection.postgres, transactionIsolation = Connection.TRANSACTION_READ_COMMITTED
+    ) {
+        val doctorEntity = findEntity(doctorServiceRequest.doctorId)
+        val serviceEntity = medicalService.findEntity(doctorServiceRequest.serviceId)
+        if (doctorEntity.services.map { it.id.value }.contains(serviceEntity.id.value)) {
+            doctorEntity.services = SizedCollection(doctorEntity.services - serviceEntity)
+        } else {
+            throw IllegalArgumentException("Service is not in doctor list for remove")
         }
     }
 }

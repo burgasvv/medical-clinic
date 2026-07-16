@@ -12,6 +12,7 @@ import org.burgas.router.configureIdentityRouter
 import org.burgas.router.configureImageRouter
 import org.burgas.router.configurePatientRouter
 import org.burgas.router.configureSecurityRouter
+import org.burgas.router.configureServiceRouter
 import org.burgas.security.configureSecurity
 import org.burgas.serialization.configureSerialization
 
@@ -33,4 +34,5 @@ suspend fun Application.modules() {
     configureDepartmentRouter()
     configureCategoryRouter()
     configureDoctorRouter()
+    configureServiceRouter()
 }
