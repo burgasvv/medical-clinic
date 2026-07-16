@@ -2,6 +2,7 @@ package org.burgas.dao
 
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
+import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.io.readByteArray
 import org.burgas.database.*
 import org.burgas.dto.*
@@ -10,6 +11,7 @@ import org.jetbrains.exposed.v1.core.statements.api.ExposedBlob
 import org.jetbrains.exposed.v1.dao.java.UUIDEntity
 import org.jetbrains.exposed.v1.dao.java.UUIDEntityClass
 import org.mindrot.jbcrypt.BCrypt
+import java.time.LocalDateTime
 import java.util.*
 
 interface File
@@ -383,14 +385,26 @@ class ScheduleEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Schedule
     val appointment by AppointmentEntity.optionalBackReferencedOn(AppointmentTable.scheduleId)
 
     override fun create(request: ScheduleRequest) {
-        request.datetime!!.let { this.dateTime = it }
+        request.datetime!!.let {
+            if (this.dateTime.toJavaLocalDateTime().isAfter(LocalDateTime.now())) {
+                this.dateTime = it
+            } else {
+                throw IllegalArgumentException("Input datetime is passed")
+            }
+        }
         request.doctorId!!.let { this.doctor = DoctorEntity.findById(it)!! }
         request.busy?.let { this.busy = it }
         request.concluded?.let { this.concluded = it }
     }
 
     override fun update(request: ScheduleRequest) {
-        request.datetime?.let { this.dateTime = it }
+        request.datetime?.let {
+            if (this.dateTime.toJavaLocalDateTime().isAfter(LocalDateTime.now())) {
+                this.dateTime = it
+            } else {
+                throw IllegalArgumentException("Input datetime is passed")
+            }
+        }
         request.doctorId?.let { this.doctor = DoctorEntity.findById(it)!! }
         request.busy?.let { this.busy = it }
         request.concluded?.let { this.concluded = it }
