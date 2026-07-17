@@ -80,9 +80,7 @@ fun Application.configureScheduleRouter() {
                 val scheduleEntity = ScheduleEntity.findById(scheduleId)!!
                     .load(ScheduleEntity::doctor, ScheduleEntity::appointment)
                 when(authToken.authority) {
-                    Authority.ADMIN -> {
-                        proceed()
-                    }
+                    Authority.ADMIN -> proceed()
                     Authority.DOCTOR -> {
                         if (scheduleEntity.doctor.identity.email == authToken.email) {
                             proceed()

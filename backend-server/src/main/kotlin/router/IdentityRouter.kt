@@ -1,4 +1,4 @@
- package org.burgas.router
+package org.burgas.router
 
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -15,11 +15,11 @@ import org.burgas.service.IdentityService
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
 
- fun Application.configureIdentityRouter() {
+fun Application.configureIdentityRouter() {
 
     val identityService by inject<IdentityService>()
 
-    intercept(ApplicationCallPipeline.Plugins) {
+    intercept(ApplicationCallPipeline.Call) {
 
         if (call.request.path().equals("/api/v1/identities/change-password", false)) {
             val authToken = call.sessions.get(AuthToken::class)
@@ -36,7 +36,7 @@ import org.koin.ktor.ext.inject
                 throw IllegalArgumentException("Not authorized intercept for changing password")
             }
 
-        } else if(call.request.path().equals("/api/v1/identities/change-status", false)) {
+        } else if (call.request.path().equals("/api/v1/identities/change-status", false)) {
             val authToken = call.sessions.get(AuthToken::class)
                 ?: throw IllegalArgumentException("Not authenticated intercept for changing status")
             val identityRequest = call.receive(IdentityRequest::class)
