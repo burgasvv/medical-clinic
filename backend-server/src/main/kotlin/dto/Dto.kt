@@ -93,6 +93,15 @@ data class PatientRequest(
 ) : Request
 
 @Serializable
+data class PatientDependency(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val identity: IdentityResponse? = null,
+    val passport: String? = null,
+    val createdAt: LocalDateTime? = null
+) : Dependency
+
+@Serializable
 data class PatientResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
@@ -268,18 +277,18 @@ data class AppointmentRequest(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     @Serializable(with = UUIDSerializer::class)
-    val scheduleId: UUID? = null,
+    val scheduleId: UUID,
     @Serializable(with = UUIDSerializer::class)
-    val patientId: UUID? = null,
+    val patientId: UUID,
     @Serializable(with = UUIDSerializer::class)
-    val serviceId: UUID? = null
+    val serviceId: UUID
 ) : Request
 
 @Serializable
 data class AppointmentDependencyInSchedule(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val patient: PatientResponse? = null,
+    val patient: PatientDependency? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
     val payment: PaymentDependency? = null
@@ -290,7 +299,7 @@ data class AppointmentDependencyInPayment(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     val schedule: ScheduleDependencyInAppointment? = null,
-    val patient: PatientResponse? = null,
+    val patient: PatientDependency? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null
 )
@@ -310,7 +319,7 @@ data class AppointmentResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     val schedule: ScheduleDependencyInAppointment? = null,
-    val patient: PatientResponse? = null,
+    val patient: PatientDependency? = null,
     val service: ServiceDependency? = null,
     val document: DocumentResponse? = null,
     val payment: PaymentDependency? = null
@@ -321,8 +330,8 @@ data class PaymentRequest(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     @Serializable(with = UUIDSerializer::class)
-    val appointmentId: UUID? = null,
-    val price: Double? = null
+    val appointmentId: UUID,
+    val price: Double
 ) : Request
 
 @Serializable

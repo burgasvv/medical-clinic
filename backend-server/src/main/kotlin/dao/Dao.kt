@@ -169,7 +169,7 @@ class AdminEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<AdminReques
 }
 
 class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PatientRequest>,
-    Modifier<PatientRequest>, ResponseMapper<PatientResponse> {
+    Modifier<PatientRequest>, DependencyMapper<PatientDependency>, ResponseMapper<PatientResponse> {
     companion object : UUIDEntityClass<PatientEntity>(PatientTable)
 
     var identity by IdentityEntity.referencedOn(PatientTable.identityId)
@@ -190,6 +190,15 @@ class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PatientRe
     override fun update(request: PatientRequest) {
         request.identity?.let { this.identity.update(it) }
         request.passport?.let { this.passport = it }
+    }
+
+    override suspend fun toDependency(): PatientDependency {
+        return PatientDependency(
+            id = this.id.value,
+            identity = this.identity.toResponse(),
+            passport = this.passport,
+            createdAt = this.createdAt
+        )
     }
 
     override suspend fun toResponse(): PatientResponse {
@@ -445,7 +454,7 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
     val payment by PaymentEntity.optionalBackReferencedOn(PaymentTable.appointmentId)
 
     override fun create(request: AppointmentRequest) {
-        val scheduleEntity = request.scheduleId!!.let {
+        val scheduleEntity = request.scheduleId.let {
             val findSchedule = ScheduleEntity.findById(it)!!
             if (!findSchedule.concluded && findSchedule.appointment == null) {
                 this.schedule = findSchedule
@@ -454,8 +463,8 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
             }
             this.schedule
         }
-        request.patientId!!.let { this.patient = PatientEntity.findById(it)!! }
-        request.serviceId!!.let {
+        request.patientId.let { this.patient = PatientEntity.findById(it)!! }
+        request.serviceId.let {
             val serviceEntity = ServiceEntity.findById(it)!!
             if (scheduleEntity.doctor.services.map { service -> service.id.value }.contains(serviceEntity.id.value)) {
                 this.service = serviceEntity
@@ -468,7 +477,7 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
     suspend fun toDependencyInSchedule(): AppointmentDependencyInSchedule {
         return AppointmentDependencyInSchedule(
             id = this.id.value,
-            patient = this.patient.toResponse(),
+            patient = this.patient.toDependency(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
             payment = this.payment?.toDependency()
@@ -491,7 +500,7 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
             schedule = this.schedule.toDependencyInAppointment(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
-            patient = this.patient.toResponse()
+            patient = this.patient.toDependency()
         )
     }
 
@@ -499,7 +508,7 @@ class AppointmentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao,
         return AppointmentResponse(
             id = this.id.value,
             schedule = this.schedule.toDependencyInAppointment(),
-            patient = this.patient.toResponse(),
+            patient = this.patient.toDependency(),
             service = this.service.toDependency(),
             document = this.document?.toResponse(),
             payment = this.payment?.toDependency()
@@ -516,7 +525,7 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PaymentRe
     var createdAt by PaymentTable.createdAt
 
     override fun create(request: PaymentRequest) {
-        request.appointmentId!!.let {
+        request.appointmentId.let {
             val appointmentEntity = AppointmentEntity.findById(it)!!
             if (appointmentEntity.payment == null) {
                 this.appointment = appointmentEntity
@@ -524,7 +533,7 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PaymentRe
                 throw IllegalArgumentException("Appointment already have payment")
             }
         }
-        request.price!!.let { this.price = it }
+        request.price.let { this.price = it }
     }
 
     override suspend fun toDependency(): PaymentDependency {

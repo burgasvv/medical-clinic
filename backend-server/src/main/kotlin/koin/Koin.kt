@@ -25,6 +25,9 @@ fun Application.configureKoin() {
         }
         singleOf(::MedicalService)
         singleOf(::ScheduleService)
+        single {
+            AppointmentService(get<DocumentService>())
+        }
     }
 
     install(Koin) {

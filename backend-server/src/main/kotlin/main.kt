@@ -4,6 +4,7 @@ import io.ktor.server.application.Application
 import org.burgas.database.configureDatabase
 import org.burgas.koin.configureKoin
 import org.burgas.router.configureAdminRouter
+import org.burgas.router.configureAppointmentRouter
 import org.burgas.router.configureCategoryRouter
 import org.burgas.router.configureDepartmentRouter
 import org.burgas.router.configureDoctorRouter
@@ -39,4 +40,5 @@ suspend fun Application.modules() {
     configureDoctorRouter()
     configureServiceRouter()
     configureScheduleRouter()
+    configureAppointmentRouter()
 }
