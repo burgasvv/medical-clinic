@@ -4,6 +4,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
+import io.ktor.server.request.receiveMultipart
 import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import org.burgas.dto.CategoryRequest
@@ -41,6 +42,11 @@ fun Application.configureCategoryRouter() {
                 delete("/delete") {
                     val categoryId = UUID.fromString(call.parameters["categoryId"])
                     categoryService.delete(categoryId)
+                    call.respond(HttpStatusCode.OK)
+                }
+
+                post("/create-by-document") {
+                    categoryService.createByDocument(call.receiveMultipart(Long.MAX_VALUE))
                     call.respond(HttpStatusCode.OK)
                 }
             }

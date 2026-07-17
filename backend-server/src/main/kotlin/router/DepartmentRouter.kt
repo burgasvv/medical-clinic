@@ -47,6 +47,11 @@ fun Application.configureDepartmentRouter() {
                     departmentService.delete(departmentId)
                     call.respond(HttpStatusCode.OK)
                 }
+
+                post("/create-by-document") {
+                    departmentService.createByDocument(call.receiveMultipart(Long.MAX_VALUE))
+                    call.respond(HttpStatusCode.OK)
+                }
             }
         }
     }

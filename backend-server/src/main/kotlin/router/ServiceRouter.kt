@@ -4,6 +4,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
+import io.ktor.server.request.receiveMultipart
 import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
@@ -50,6 +51,11 @@ fun Application.configureServiceRouter() {
                 delete("/delete") {
                     val serviceId = UUID.fromString(call.parameters["serviceId"])
                     medicalService.delete(serviceId)
+                    call.respond(HttpStatusCode.OK)
+                }
+
+                post("/create-by-document") {
+                    medicalService.createByDocument(call.receiveMultipart(Long.MAX_VALUE))
                     call.respond(HttpStatusCode.OK)
                 }
             }

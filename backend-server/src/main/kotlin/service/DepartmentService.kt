@@ -1,23 +1,25 @@
 package org.burgas.service
 
+import io.ktor.http.content.*
+import io.ktor.utils.io.*
+import io.ktor.utils.io.streams.*
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.burgas.dao.DepartmentEntity
 import org.burgas.database.DatabaseConnection
 import org.burgas.dto.DepartmentRequest
 import org.burgas.dto.DepartmentResponse
-import org.burgas.service.contract.CollectService
-import org.burgas.service.contract.CreateService
-import org.burgas.service.contract.DeleteService
-import org.burgas.service.contract.ReadService
-import org.burgas.service.contract.UpdateService
+import org.burgas.service.contract.*
 import org.jetbrains.exposed.v1.dao.load
 import org.jetbrains.exposed.v1.dao.with
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import java.sql.Connection
-import java.util.UUID
+import java.util.*
 
 class DepartmentService : CollectService<DepartmentResponse>, ReadService<UUID, DepartmentEntity, DepartmentResponse>,
-    CreateService<DepartmentRequest, DepartmentResponse>,
-    UpdateService<DepartmentRequest, DepartmentResponse>, DeleteService<UUID> {
+    CreateService<DepartmentRequest, DepartmentResponse>, UpdateService<DepartmentRequest, DepartmentResponse>,
+    DeleteService<UUID>, PoiService {
 
     override suspend fun findAll(): List<DepartmentResponse> = suspendTransaction(
         db = DatabaseConnection.postgres, readOnly = true
@@ -55,5 +57,21 @@ class DepartmentService : CollectService<DepartmentResponse>, ReadService<UUID, 
         db = DatabaseConnection.postgres, transactionIsolation = Connection.TRANSACTION_READ_COMMITTED
     ) {
         findEntity(id).delete()
+    }
+
+    @OptIn(InternalAPI::class)
+    override suspend fun createByDocument(multiPartData: MultiPartData) = suspendTransaction(
+        db = DatabaseConnection.postgres, transactionIsolation = Connection.TRANSACTION_READ_COMMITTED
+    ) {
+        val fileItem = multiPartData.asFlow().filterIsInstance<PartData.FileItem>().first()
+        XSSFWorkbook(fileItem.provider().readBuffer.inputStream()).use {
+            it.getSheetAt(0).forEach { row ->
+                val departmentRequest = DepartmentRequest(
+                    name = row.getCell(0)!!.stringCellValue,
+                    description = row.getCell(1)!!.stringCellValue
+                )
+                DepartmentEntity.new { this.create(departmentRequest) }
+            }
+        }
     }
 }
