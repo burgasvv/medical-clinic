@@ -12,6 +12,7 @@ import org.burgas.router.configureDocumentRouter
 import org.burgas.router.configureIdentityRouter
 import org.burgas.router.configureImageRouter
 import org.burgas.router.configurePatientRouter
+import org.burgas.router.configurePaymentRouter
 import org.burgas.router.configureScheduleRouter
 import org.burgas.router.configureSecurityRouter
 import org.burgas.router.configureServiceRouter
@@ -41,4 +42,5 @@ suspend fun Application.modules() {
     configureServiceRouter()
     configureScheduleRouter()
     configureAppointmentRouter()
+    configurePaymentRouter()
 }

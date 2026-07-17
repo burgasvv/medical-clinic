@@ -28,6 +28,7 @@ fun Application.configureKoin() {
         single {
             AppointmentService(get<DocumentService>())
         }
+        singleOf(::PaymentService)
     }
 
     install(Koin) {

@@ -8,7 +8,7 @@
 ###
 POST /api/v1/security/login
 Host: localhost:9000
-Authorization: Basic zagor@gmail.com zagor
+Authorization: Basic burgasvv@gmail.com burgasvv
 
 ###
 POST /api/v1/security/logout
@@ -356,3 +356,22 @@ Content-Type: application/json
 PUT /api/v1/appointments/conclude?appointmentId=5017f4fb-4fe9-42f7-88e9-445756643460
 Host: localhost:9000
 Content-Type: application/json
+
+
+
+### Payment Requests
+
+
+
+###
+GET /api/v1/payments/by-id?paymentId=0b4ac15c-35b0-430c-89b8-bff331db9dff
+Host: localhost:9000
+
+###
+POST /api/v1/payments/create
+Host: localhost:9000
+Content-Type: application/json
+
+{
+    "appointmentId": "5017f4fb-4fe9-42f7-88e9-445756643460"
+}

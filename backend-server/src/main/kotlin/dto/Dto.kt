@@ -330,8 +330,7 @@ data class PaymentRequest(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     @Serializable(with = UUIDSerializer::class)
-    val appointmentId: UUID,
-    val price: Double
+    val appointmentId: UUID
 ) : Request
 
 @Serializable

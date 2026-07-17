@@ -525,15 +525,16 @@ class PaymentEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PaymentRe
     var createdAt by PaymentTable.createdAt
 
     override fun create(request: PaymentRequest) {
-        request.appointmentId.let {
+        val appointment = request.appointmentId.let {
             val appointmentEntity = AppointmentEntity.findById(it)!!
             if (appointmentEntity.payment == null) {
                 this.appointment = appointmentEntity
             } else {
                 throw IllegalArgumentException("Appointment already have payment")
             }
+            this.appointment
         }
-        request.price.let { this.price = it }
+        this.price = appointment.service.price
     }
 
     override suspend fun toDependency(): PaymentDependency {
