@@ -19,13 +19,18 @@ fun Application.configureDepartmentRouter() {
 
         route("/api/v1/departments") {
 
-            get {
-                call.respond(HttpStatusCode.OK, departmentService.findAll())
-            }
+            authenticate(
+                "session-auth-admin", "session-auth-doctor",
+                strategy = AuthenticationStrategy.FirstSuccessful
+            ) {
+                get {
+                    call.respond(HttpStatusCode.OK, departmentService.findAll())
+                }
 
-            get("/by-id") {
-                val departmentId = UUID.fromString(call.parameters["departmentId"])
-                call.respond(HttpStatusCode.OK, departmentService.findById(departmentId))
+                get("/by-id") {
+                    val departmentId = UUID.fromString(call.parameters["departmentId"])
+                    call.respond(HttpStatusCode.OK, departmentService.findById(departmentId))
+                }
             }
 
             authenticate("session-auth-admin") {

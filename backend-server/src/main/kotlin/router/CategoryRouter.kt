@@ -2,6 +2,7 @@ package org.burgas.router
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
+import io.ktor.server.auth.AuthenticationStrategy
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.request.receiveMultipart
@@ -20,9 +21,14 @@ fun Application.configureCategoryRouter() {
 
         route("/api/v1/categories") {
 
-            get("/by-id") {
-                val categoryId = UUID.fromString(call.parameters["categoryId"])
-                call.respond(HttpStatusCode.OK, categoryService.findById(categoryId))
+            authenticate(
+                "session-auth-admin", "session-auth-doctor",
+                strategy = AuthenticationStrategy.FirstSuccessful
+            ) {
+                get("/by-id") {
+                    val categoryId = UUID.fromString(call.parameters["categoryId"])
+                    call.respond(HttpStatusCode.OK, categoryService.findById(categoryId))
+                }
             }
 
             authenticate("session-auth-admin") {
