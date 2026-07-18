@@ -128,6 +128,7 @@ fun Application.configureSecurity() {
 
     install(CSRF) {
         allowOrigin("http://localhost:9000")
+        allowOrigin("http://localhost:4200")
         checkHeader("X-CSRF-Token")
         onFailure { errorResult ->
             respond(HttpStatusCode.BadRequest, errorResult)
