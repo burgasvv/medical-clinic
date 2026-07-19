@@ -9,11 +9,12 @@ import { Footer } from './components/footer/footer';
 import { Main } from './components/main/main';
 import { Service } from './components/service/service';
 import { ServiceItem } from './components/service-item/service-item';
+import {provideHttpClient} from '@angular/common/http';
 
 @NgModule({
     declarations: [App, Header, Footer, Main, Service, ServiceItem],
     imports: [BrowserModule, AppRoutingModule, CommonModule],
-    providers: [provideBrowserGlobalErrorListeners(), provideClientHydration()],
+    providers: [provideBrowserGlobalErrorListeners(), provideClientHydration(), provideHttpClient()],
     bootstrap: [App],
 })
 export class AppModule {}

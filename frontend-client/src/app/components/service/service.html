@@ -1,1 +1,10 @@
-<p>service works!</p>
+<h2>Услуги</h2>
+@for (service of services(); track service.id) {
+    <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+        <div class="card-header">{{ service.name }}</div>
+        <div class="card-body">
+            <h5 class="card-title">Цена: {{ service.price }}р.</h5>
+            <p class="card-text">{{ service.description }}</p>
+        </div>
+    </div>
+}
