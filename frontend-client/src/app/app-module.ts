@@ -9,12 +9,17 @@ import { Footer } from './components/footer/footer';
 import { Main } from './components/main/main';
 import { Service } from './components/service/service';
 import { ServiceItem } from './components/service-item/service-item';
-import {provideHttpClient} from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
+import { Auth } from './components/auth/auth';
 
 @NgModule({
-    declarations: [App, Header, Footer, Main, Service, ServiceItem],
+    declarations: [App, Header, Footer, Main, Service, ServiceItem, Auth],
     imports: [BrowserModule, AppRoutingModule, CommonModule],
-    providers: [provideBrowserGlobalErrorListeners(), provideClientHydration(), provideHttpClient()],
+    providers: [
+        provideBrowserGlobalErrorListeners(),
+        provideClientHydration(),
+        provideHttpClient(),
+    ],
     bootstrap: [App],
 })
 export class AppModule {}

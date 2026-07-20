@@ -1,7 +1,7 @@
-import {Service, inject} from '@angular/core';
+import {inject, Service} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {ServiceResponse} from '../../models/service.model';
+import {ServiceRequest, ServiceResponse} from '../../models/service.model';
 
 @Service()
 export class MedicalService {
@@ -15,5 +15,9 @@ export class MedicalService {
 
     findById(id: string) {
         return this.http.get<ServiceResponse>(`${this.url}/by-id?serviceId=${id}`)
+    }
+
+    create(serviceRequest: ServiceRequest): Observable<any> {
+        return this.http.post(`${this.url}/create`, serviceRequest)
     }
 }

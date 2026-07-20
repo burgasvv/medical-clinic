@@ -4,9 +4,11 @@ import {CommonModule} from '@angular/common';
 import {Main} from './components/main/main';
 import {Service} from './components/service/service';
 import {ServiceItem} from './components/service-item/service-item';
+import {Auth} from './components/auth/auth';
 
 const routes: Routes = [
     {path: '', component: Main},
+    {path: 'login', component: Auth},
     {path: 'services', component: Service},
     {path: 'services/:id', component: ServiceItem}
 ];

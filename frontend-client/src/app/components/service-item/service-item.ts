@@ -13,7 +13,7 @@ export class ServiceItem implements OnInit {
 
     private medicalService = inject(MedicalService)
     private route = inject(ActivatedRoute)
-    private service = signal<ServiceResponse | undefined>(undefined)
+    protected service = signal<ServiceResponse | undefined>(undefined)
 
     ngOnInit(): void {
         let id = this.route.snapshot.paramMap.get("id")
