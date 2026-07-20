@@ -6,7 +6,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
 import org.burgas.dao.DoctorEntity
 import org.burgas.dao.ScheduleEntity
 import org.burgas.database.Authority
@@ -27,8 +26,8 @@ fun Application.configureScheduleRouter() {
 
         if (call.request.path() == "/api/v1/schedules/create") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept by create schedule"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept by create schedule")
             val scheduleRequest = call.receive<ScheduleRequest>()
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -42,8 +41,8 @@ fun Application.configureScheduleRouter() {
 
         } else if (call.request.path() == "/api/v1/schedules/update") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept by update schedule"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept by update schedule")
             val scheduleRequest = call.receive<ScheduleRequest>()
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -57,8 +56,8 @@ fun Application.configureScheduleRouter() {
 
         } else if (call.request.path() == "/api/v1/schedules/delete") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept by delete schedule"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept by delete schedule")
             val scheduleId = UUID.fromString(call.parameters["scheduleId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -72,8 +71,8 @@ fun Application.configureScheduleRouter() {
 
         } else if (call.request.path() == "/api/v1/schedules/by-id") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept schedule by id"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept schedule by id")
             val scheduleId = UUID.fromString(call.parameters["scheduleId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {

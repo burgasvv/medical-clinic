@@ -34,7 +34,7 @@ fun Application.configureSecurity() {
                     identity != null && identity.status &&
                     BCrypt.checkpw(credentials.password, identity.password)
                 ) {
-                    UserPasswordCredential(credentials.name, credentials.password)
+                    identity
                 } else {
                     null
                 }

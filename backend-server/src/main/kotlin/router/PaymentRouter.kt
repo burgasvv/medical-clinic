@@ -1,15 +1,11 @@
 package org.burgas.router
 
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.AuthenticationStrategy
-import io.ktor.server.auth.authenticate
-import io.ktor.server.request.path
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
+import io.ktor.server.auth.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.get
-import io.ktor.server.sessions.sessions
 import org.burgas.dao.PaymentEntity
 import org.burgas.database.Authority
 import org.burgas.database.DatabaseConnection
@@ -19,7 +15,7 @@ import org.burgas.service.PaymentService
 import org.jetbrains.exposed.v1.dao.load
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
-import java.util.UUID
+import java.util.*
 
 fun Application.configurePaymentRouter() {
 
@@ -29,8 +25,8 @@ fun Application.configurePaymentRouter() {
 
         if (call.request.path() == "/api/v1/payments/by-id") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept payment by id"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept payment by id")
             val paymentId = UUID.fromString(call.parameters["paymentId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {

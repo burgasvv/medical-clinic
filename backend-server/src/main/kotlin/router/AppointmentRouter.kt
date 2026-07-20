@@ -1,23 +1,11 @@
 package org.burgas.router
 
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationCallPipeline
-import io.ktor.server.application.call
-import io.ktor.server.auth.AuthenticationStrategy
-import io.ktor.server.auth.authenticate
-import io.ktor.server.request.path
-import io.ktor.server.request.receive
-import io.ktor.server.request.receiveMultipart
-import io.ktor.server.response.respond
-import io.ktor.server.routing.delete
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.put
-import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
-import io.ktor.server.sessions.get
-import io.ktor.server.sessions.sessions
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.burgas.dao.AppointmentEntity
 import org.burgas.dao.PatientEntity
 import org.burgas.dao.ScheduleEntity
@@ -29,7 +17,7 @@ import org.burgas.service.AppointmentService
 import org.jetbrains.exposed.v1.dao.load
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
-import java.util.UUID
+import java.util.*
 
 fun Application.configureAppointmentRouter() {
 
@@ -39,8 +27,8 @@ fun Application.configureAppointmentRouter() {
 
         if (call.request.path() == "/api/v1/appointments/by-id" || call.request.path() == "/api/v1/appointments/delete") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept appointment by id/delete"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept appointment by id/delete")
             val appointmentId = UUID.fromString(call.parameters["appointmentId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -70,8 +58,8 @@ fun Application.configureAppointmentRouter() {
 
         } else if (call.request.path() == "/api/v1/appointments/create") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept appointment by create"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept appointment by create")
             val appointmentRequest = call.receive<AppointmentRequest>()
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -107,8 +95,8 @@ fun Application.configureAppointmentRouter() {
             call.request.path() == "/api/v1/appointments/remove-document" ||
             call.request.path() == "/api/v1/appointments/conclude"
         ) {
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept appointment by docs/conclude"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept appointment by docs/conclude")
             val appointmentId = UUID.fromString(call.parameters["appointmentId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {

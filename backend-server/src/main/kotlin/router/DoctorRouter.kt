@@ -6,7 +6,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
 import org.burgas.dao.DoctorEntity
 import org.burgas.database.Authority
 import org.burgas.database.DatabaseConnection
@@ -27,8 +26,8 @@ fun Application.configureDoctorRouter() {
 
         if (call.request.path() == "/api/v1/doctors/update") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept doctors by update"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept doctors by update")
             val doctorRequest = call.receive<DoctorRequest>()
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -45,8 +44,8 @@ fun Application.configureDoctorRouter() {
 
         } else if (call.request.path() == "/api/v1/doctors/delete") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept doctors by delete"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept doctors by delete")
             val doctorId = UUID.fromString(call.parameters["doctorId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -64,8 +63,8 @@ fun Application.configureDoctorRouter() {
         } else if (
             call.request.path() == "/api/v1/doctors/add-image" || call.request.path() == "/api/v1/doctors/remove-image"
         ) {
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept doctors by add/remove image"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept doctors by add/remove image")
             val doctorId = UUID.fromString(call.parameters["doctorId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -80,8 +79,8 @@ fun Application.configureDoctorRouter() {
         } else if (
             call.request.path() == "/api/v1/doctors/add-service" || call.request.path() == "/api/v1/doctors/remove-service"
         ) {
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept doctors by add/remove service"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept doctors by add/remove service")
             val doctorServiceRequest = call.receive<DoctorServiceRequest>()
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {

@@ -6,7 +6,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
 import org.burgas.dao.IdentityEntity
 import org.burgas.database.DatabaseConnection
 import org.burgas.dto.AuthToken
@@ -22,7 +21,8 @@ fun Application.configureIdentityRouter() {
     intercept(ApplicationCallPipeline.Call) {
 
         if (call.request.path().equals("/api/v1/identities/change-password", false)) {
-            val authToken = call.sessions.get(AuthToken::class)
+
+            val authToken = call.principal<AuthToken>()
                 ?: throw IllegalArgumentException("Not authenticated intercept for changing password")
             val identityRequest = call.receive(IdentityRequest::class)
 
@@ -37,7 +37,8 @@ fun Application.configureIdentityRouter() {
             }
 
         } else if (call.request.path().equals("/api/v1/identities/change-status", false)) {
-            val authToken = call.sessions.get(AuthToken::class)
+
+            val authToken = call.principal<AuthToken>()
                 ?: throw IllegalArgumentException("Not authenticated intercept for changing status")
             val identityRequest = call.receive(IdentityRequest::class)
 

@@ -6,7 +6,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
 import org.burgas.dao.AdminEntity
 import org.burgas.database.DatabaseConnection
 import org.burgas.dto.AdminRequest
@@ -25,8 +24,8 @@ fun Application.configureAdminRouter() {
 
         if (call.request.path() == "/api/v1/admins/by-id" || call.request.path() == "/api/v1/admins/delete") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept admins by id"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept admins by id")
             val adminId = UUID.fromString(call.parameters["adminId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -40,8 +39,8 @@ fun Application.configureAdminRouter() {
 
         } else if (call.request.path() == "/api/v1/admins/update") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept admins update"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept admins update")
             val adminRequest = call.receive<AdminRequest>()
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {

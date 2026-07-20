@@ -4,6 +4,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.auth.AuthenticationStrategy
 import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
 import io.ktor.server.request.path
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -29,8 +30,8 @@ fun Application.configurePatientRouter() {
 
         if (call.request.path() == "/api/v1/patients/by-id") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept by id"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept patient by id")
             val patientId = UUID.fromString(call.parameters["patientId"])
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -41,14 +42,14 @@ fun Application.configurePatientRouter() {
                 ) {
                     proceed()
                 } else {
-                    throw IllegalArgumentException("Not authorized intercept with parameter")
+                    throw IllegalArgumentException("Not authorized intercept patient by id")
                 }
             }
 
         } else if (call.request.path() == "/api/v1/patients/update") {
 
-            val authToken = (call.sessions.get(AuthToken::class)
-                ?: throw IllegalArgumentException("Not authenticated intercept by update"))
+            val authToken = call.principal<AuthToken>()
+                ?: throw IllegalArgumentException("Not authenticated intercept patient by update")
             val patientRequest = call.receive<PatientRequest>()
 
             suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -56,7 +57,7 @@ fun Application.configurePatientRouter() {
                 if (patientEntity.identity.email == authToken.email || authToken.authority == Authority.ADMIN) {
                     proceed()
                 } else {
-                    throw IllegalArgumentException("Not authorized intercept with parameter")
+                    throw IllegalArgumentException("Not authorized intercept patient by update")
                 }
             }
 
