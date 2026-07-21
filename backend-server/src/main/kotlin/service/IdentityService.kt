@@ -2,9 +2,12 @@ package org.burgas.service
 
 import org.burgas.dao.IdentityEntity
 import org.burgas.database.DatabaseConnection
+import org.burgas.database.IdentityTable
+import org.burgas.dto.AuthToken
 import org.burgas.dto.IdentityRequest
 import org.burgas.dto.IdentityResponse
 import org.burgas.service.contract.ReadService
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.mindrot.jbcrypt.BCrypt
 import java.sql.Connection
@@ -22,6 +25,12 @@ class IdentityService : ReadService<UUID, IdentityEntity, IdentityResponse> {
         db = DatabaseConnection.postgres, readOnly = true
     ) {
         findEntity(id).toResponse()
+    }
+
+    suspend fun findAuthenticated(authToken: AuthToken): IdentityResponse = suspendTransaction(
+        db = DatabaseConnection.postgres, readOnly = true
+    ) {
+        IdentityEntity.find { IdentityTable.email eq authToken.email }.single().toResponse()
     }
 
     suspend fun changeStatus(identityRequest: IdentityRequest) = suspendTransaction(

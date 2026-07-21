@@ -57,7 +57,7 @@ data class IdentityRequest(
 ) : Request
 
 @Serializable
-data class IdentityResponse(
+data class IdentityDependency(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
     val authority: Authority? = null,
@@ -67,6 +67,22 @@ data class IdentityResponse(
     val firstname: String? = null,
     val lastname: String? = null,
     val patronymic: String? = null
+) : Dependency
+
+@Serializable
+data class IdentityResponse(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val authority: Authority? = null,
+    val email: String? = null,
+    val phone: String? = null,
+    val status: Boolean? = null,
+    val firstname: String? = null,
+    val lastname: String? = null,
+    val patronymic: String? = null,
+    val admin: AdminDependencyInIdentity? = null,
+    val patient: PatientDependencyInIdentity? = null,
+    val doctor: DoctorDependencyInIdentity? = null,
 ) : Response
 
 @Serializable
@@ -77,10 +93,17 @@ data class AdminRequest(
 ) : Request
 
 @Serializable
+data class AdminDependencyInIdentity(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val createdAt: LocalDateTime? = null
+)
+
+@Serializable
 data class AdminResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val identity: IdentityResponse? = null,
+    val identity: IdentityDependency? = null,
     val createdAt: LocalDateTime? = null
 ) : Response
 
@@ -93,10 +116,18 @@ data class PatientRequest(
 ) : Request
 
 @Serializable
+data class PatientDependencyInIdentity(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val passport: String? = null,
+    val createdAt: LocalDateTime? = null
+)
+
+@Serializable
 data class PatientDependency(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val identity: IdentityResponse? = null,
+    val identity: IdentityDependency? = null,
     val passport: String? = null,
     val createdAt: LocalDateTime? = null
 ) : Dependency
@@ -105,7 +136,7 @@ data class PatientDependency(
 data class PatientResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val identity: IdentityResponse? = null,
+    val identity: IdentityDependency? = null,
     val passport: String? = null,
     val createdAt: LocalDateTime? = null,
     val appointments: List<AppointmentDependencyInPatient>? = null
@@ -175,10 +206,20 @@ data class DoctorRequest(
 ) : Request
 
 @Serializable
+data class DoctorDependencyInIdentity(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = null,
+    val category: String? = null,
+    val about: String? = null,
+    val image: ImageResponse? = null,
+    val createdAt: LocalDateTime? = null
+)
+
+@Serializable
 data class DoctorDependency(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val identity: IdentityResponse? = null,
+    val identity: IdentityDependency? = null,
     val category: String? = null,
     val about: String? = null,
     val image: ImageResponse? = null,
@@ -189,7 +230,7 @@ data class DoctorDependency(
 data class DoctorResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = null,
-    val identity: IdentityResponse? = null,
+    val identity: IdentityDependency? = null,
     val category: CategoryDependency? = null,
     val about: String? = null,
     val image: ImageResponse? = null,

@@ -123,13 +123,16 @@ fun Application.configureSecurity() {
         allowCredentials = true
         allowSameOrigin = true
 
-        anyHost()
+        allowHost("localhost:9000")
+        allowHost("localhost:4200")
     }
 
     install(CSRF) {
         allowOrigin("http://localhost:9000")
         allowOrigin("http://localhost:4200")
+
         checkHeader("X-CSRF-Token")
+
         onFailure { errorResult ->
             respond(HttpStatusCode.BadRequest, errorResult)
         }

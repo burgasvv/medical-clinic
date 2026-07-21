@@ -96,7 +96,7 @@ class DocumentEntity(id: EntityID<UUID>) : UUIDEntity(id), File, Uploader, Respo
 }
 
 class IdentityEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<IdentityRequest>,
-    Modifier<IdentityRequest>, ResponseMapper<IdentityResponse> {
+    Modifier<IdentityRequest>, DependencyMapper<IdentityDependency>, ResponseMapper<IdentityResponse> {
     companion object : UUIDEntityClass<IdentityEntity>(IdentityTable)
 
     var authority by IdentityTable.authority
@@ -107,6 +107,9 @@ class IdentityEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Identity
     var firstname by IdentityTable.firstname
     var lastname by IdentityTable.lastname
     var patronymic by IdentityTable.patronymic
+    val admin by AdminEntity.optionalBackReferencedOn(AdminTable.identityId)
+    val patient by PatientEntity.optionalBackReferencedOn(PatientTable.identityId)
+    val doctor by DoctorEntity.optionalBackReferencedOn(DoctorTable.identityId)
 
     override fun create(request: IdentityRequest) {
         request.email!!.let { this.email = it }
@@ -125,6 +128,19 @@ class IdentityEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Identity
         request.patronymic?.let { this.patronymic = it }
     }
 
+    override suspend fun toDependency(): IdentityDependency {
+        return IdentityDependency(
+            id = this.id.value,
+            authority = this.authority,
+            email = this.email,
+            phone = this.phone,
+            status = this.status,
+            firstname = this.firstname,
+            lastname = this.lastname,
+            patronymic = this.patronymic
+        )
+    }
+
     override suspend fun toResponse(): IdentityResponse {
         return IdentityResponse(
             id = this.id.value,
@@ -134,7 +150,10 @@ class IdentityEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<Identity
             status = this.status,
             firstname = this.firstname,
             lastname = this.lastname,
-            patronymic = this.patronymic
+            patronymic = this.patronymic,
+            admin = this.admin?.toAdminDependencyInIdentity(),
+            patient = this.patient?.toPatientDependencyInIdentity(),
+            doctor = this.doctor?.toDoctorDependencyInIdentity()
         )
     }
 }
@@ -159,10 +178,17 @@ class AdminEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<AdminReques
         request.identity?.let { this.identity.update(it) }
     }
 
+    fun toAdminDependencyInIdentity(): AdminDependencyInIdentity {
+        return AdminDependencyInIdentity(
+            id = this.id.value,
+            createdAt = this.createdAt
+        )
+    }
+
     override suspend fun toResponse(): AdminResponse {
         return AdminResponse(
             id = this.id.value,
-            identity = this.identity.toResponse(),
+            identity = this.identity.toDependency(),
             createdAt = this.createdAt
         )
     }
@@ -195,7 +221,15 @@ class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PatientRe
     override suspend fun toDependency(): PatientDependency {
         return PatientDependency(
             id = this.id.value,
-            identity = this.identity.toResponse(),
+            identity = this.identity.toDependency(),
+            passport = this.passport,
+            createdAt = this.createdAt
+        )
+    }
+
+    fun toPatientDependencyInIdentity(): PatientDependencyInIdentity {
+        return PatientDependencyInIdentity(
+            id = this.id.value,
             passport = this.passport,
             createdAt = this.createdAt
         )
@@ -204,7 +238,7 @@ class PatientEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<PatientRe
     override suspend fun toResponse(): PatientResponse {
         return PatientResponse(
             id = this.id.value,
-            identity = this.identity.toResponse(),
+            identity = this.identity.toDependency(),
             passport = this.passport,
             createdAt = this.createdAt,
             appointments = this.appointments.map { it.toDependencyInPatient() }
@@ -317,10 +351,20 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<DoctorRequ
         request.about?.let { this.about = it }
     }
 
+    suspend fun toDoctorDependencyInIdentity(): DoctorDependencyInIdentity {
+        return DoctorDependencyInIdentity(
+            id = this.id.value,
+            category = this.category?.name,
+            about = this.about,
+            image = this.image?.toResponse(),
+            createdAt = this.createdAt
+        )
+    }
+
     override suspend fun toDependency(): DoctorDependency {
         return DoctorDependency(
             id = this.id.value,
-            identity = this.identity.toResponse(),
+            identity = this.identity.toDependency(),
             category = this.category?.name,
             about = this.about,
             image = this.image?.toResponse(),
@@ -331,7 +375,7 @@ class DoctorEntity(id: EntityID<UUID>) : UUIDEntity(id), Dao, Creator<DoctorRequ
     override suspend fun toResponse(): DoctorResponse {
         return DoctorResponse(
             id = this.id.value,
-            identity = this.identity.toResponse(),
+            identity = this.identity.toDependency(),
             category = this.category?.toDependency(),
             about = this.about,
             image = this.image?.toResponse(),

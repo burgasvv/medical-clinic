@@ -21,6 +21,10 @@ Host: localhost:9000
 
 
 ###
+GET /api/v1/identities/authenticated
+Host: localhost:9000
+
+###
 PUT /api/v1/identities/change-password
 Host: localhost:9000
 Content-Type: application/json
@@ -323,7 +327,7 @@ Host: localhost:9000
 Content-Type: application/json
 
 {
-    "datetime": "2026-07-18T15:00:00",
+    "datetime": "2026-07-18T15:00:00Z",
     "doctorId": "7ca4b966-c1b4-49be-bd0f-9e3802246cd3"
 }
 

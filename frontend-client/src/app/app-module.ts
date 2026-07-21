@@ -9,16 +9,18 @@ import { Footer } from './components/footer/footer';
 import { Main } from './components/main/main';
 import { Service } from './components/service/service';
 import { ServiceItem } from './components/service-item/service-item';
-import { provideHttpClient } from '@angular/common/http';
+import {provideHttpClient, withInterceptors} from '@angular/common/http';
 import { Auth } from './components/auth/auth';
+import {authInterceptor} from './services/auth-service/auth-interceptor';
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
     declarations: [App, Header, Footer, Main, Service, ServiceItem, Auth],
-    imports: [BrowserModule, AppRoutingModule, CommonModule],
+    imports: [BrowserModule, AppRoutingModule, CommonModule, FormsModule],
     providers: [
         provideBrowserGlobalErrorListeners(),
         provideClientHydration(),
-        provideHttpClient(),
+        provideHttpClient(withInterceptors([authInterceptor])),
     ],
     bootstrap: [App],
 })

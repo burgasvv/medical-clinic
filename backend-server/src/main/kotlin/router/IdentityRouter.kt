@@ -23,7 +23,7 @@ fun Application.configureIdentityRouter() {
         if (call.request.path().equals("/api/v1/identities/change-password", false)) {
 
             val authToken = call.principal<AuthToken>()
-                ?: throw IllegalArgumentException("Not authenticated intercept for changing password")
+                ?: throw IllegalArgumentException("Not authenticated intercept identity for changing password")
             val identityRequest = call.receive(IdentityRequest::class)
 
             val identityEntity = suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -33,13 +33,13 @@ fun Application.configureIdentityRouter() {
             if (identityEntity.email == authToken.email) {
                 proceed()
             } else {
-                throw IllegalArgumentException("Not authorized intercept for changing password")
+                throw IllegalArgumentException("Not authorized intercept identity for changing password")
             }
 
         } else if (call.request.path().equals("/api/v1/identities/change-status", false)) {
 
             val authToken = call.principal<AuthToken>()
-                ?: throw IllegalArgumentException("Not authenticated intercept for changing status")
+                ?: throw IllegalArgumentException("Not authenticated intercept identity for changing status")
             val identityRequest = call.receive(IdentityRequest::class)
 
             val identityEntity = suspendTransaction(db = DatabaseConnection.postgres, readOnly = true) {
@@ -49,7 +49,7 @@ fun Application.configureIdentityRouter() {
             if (identityEntity.email != authToken.email) {
                 proceed()
             } else {
-                throw IllegalArgumentException("Not authorized intercept for changing status. Emails matched")
+                throw IllegalArgumentException("Not authorized intercept identity for changing status. Emails matched")
             }
 
         } else {
@@ -62,6 +62,12 @@ fun Application.configureIdentityRouter() {
         route("/api/v1/identities") {
 
             authenticate("session-auth") {
+
+                get("/authenticated") {
+                    val authToken = call.principal<AuthToken>()
+                        ?: throw IllegalArgumentException("Not authenticated identity")
+                    call.respond(HttpStatusCode.OK, identityService.findAuthenticated(authToken))
+                }
 
                 put("/change-password") {
                     val identityRequest = call.receive<IdentityRequest>()

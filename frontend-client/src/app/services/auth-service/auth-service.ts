@@ -10,8 +10,8 @@ export class AuthService {
     private url: string = "http://localhost:9000/api/v1/security"
 
     login(form: NgForm): Observable<any> {
-        const {username, password} = form.value
-        const credentials = btoa(`${username}:${password}`);
+        const {email, password} = form.value
+        const credentials = btoa(`${email}:${password}`);
         const headers = new HttpHeaders({
             'Authorization': `Basic ${credentials}`
         });
@@ -19,6 +19,6 @@ export class AuthService {
     }
 
     logout(): Observable<any> {
-        return this.http.post(`${this.url}/logout`, {}, { withCredentials: true })
+        return this.http.post(`${this.url}/logout`, {})
     }
 }

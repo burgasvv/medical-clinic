@@ -22,15 +22,6 @@ export class Auth {
             },
             error: err => console.log(err)
         })
-    }
-
-    onLogout() {
-        this.authService.logout().subscribe({
-            next: value => {
-                console.log(value)
-                this.router.navigateByUrl('').then(r => r)
-            },
-            error: err => console.log(err)
-        })
+        form.resetForm()
     }
 }

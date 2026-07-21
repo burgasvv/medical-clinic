@@ -1,5 +1,5 @@
 
-import {IdentityRequest, IdentityResponse} from './identity.model';
+import {IdentityDependency, IdentityRequest} from './identity.model';
 import {ImageResponse} from './image.model';
 import {CategoryDependency} from './category.model';
 import {ServiceDependency} from './service.model';
@@ -14,7 +14,15 @@ export interface DoctorRequest {
 
 export interface DoctorDependency {
     id: string | null;
-    identity: IdentityResponse | null;
+    identity: IdentityDependency | null;
+    category: string | null;
+    about: string | null;
+    image: ImageResponse | null;
+    createdAt: Date | null;
+}
+
+export interface DoctorDependencyInIdentity {
+    id: string | null;
     category: string | null;
     about: string | null;
     image: ImageResponse | null;
@@ -23,7 +31,7 @@ export interface DoctorDependency {
 
 export interface DoctorResponse {
     id: string | null;
-    identity: IdentityResponse | null;
+    identity: IdentityDependency | null;
     category: CategoryDependency | null;
     about: string | null;
     image: ImageResponse | null;
